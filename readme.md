@@ -20,14 +20,14 @@ Without this, NVDA reads the title bar every time it changes.
 
 5. Optional but recommended: turn down the sound. In the Options menu, navigate to Audio, Volume (alt o, a, v)
 
-##Starting the game
+## Starting the game
 Each time you run VBA, you'll need to load the rom.
 You can do this from the open dialog, or load a recent rom after you've opened it once.
 
 Once the rom is loaded, load the lua script (tools, lua, New Lua script window).
 From there, load pokemon.lua, press run. It should say ready (or your language equivalent, bassed on the game you've downloaded), alt tab out and back in again
 
-##Keys
+## Keys
 Make sure num lock is off while playing the game, or the keys won't work.
 
 * Standard gameBoy keys: z/x are a/b, enter/backspace start/select and arrows.
@@ -42,7 +42,7 @@ Make sure num lock is off while playing the game, or the keys won't work.
 * h - read enemy health if in a battle
 * r - read the surrounding tiles (for debugging purposes)
 
-###Camera
+### Camera
 * s - move the camera left, stopping at walls
 * f - move the camera right, stopping at walls
 * e - move the camera up, stopping at walls
@@ -51,17 +51,17 @@ Make sure num lock is off while playing the game, or the keys won't work.
 * add shift to s/f/e/c to move the camera, ignoring walls
 * Shift + y - read current camera position
 
-##Notes
+## Notes
 New translations for the supported games are welcome. You should translate all files on the lang/<language> and send them to me (or make a PR).
 
-##Contact information
+## Contact information
 If you find a bug, or want to contact me about these scripts, my contact information is below.
 for bugs, send a save state with instructions on how to reproduce the issue from it, whenever possible. You can save a named one with control shift s in the game.
 
 Email: nuive.code@gmail.com
 Source code: https://github.com/nuive/pokemon-access
 
-##Credits
+## Credits
 None of this would have been possible without the original Pokecrystal Access Project written by Tyler Spivey, who did a great work with that. Here is the original project information.
 
 Original project homepage (pokecrystal access): http://allinaccess.com/pca/
