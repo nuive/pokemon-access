@@ -1329,17 +1329,6 @@ local name = get_map_name(get_map_id())
 tolk.output(name)
 end
 
-function read_roammap()
-line = screen.tile_lines[16]
-tospeak = ""
--- for i=1, #line do
-tospeak = tospeak .. string.byte(KEYBOARD_UPPER_STRING,4) .. ", "
--- end
--- local connections = memory.readbyte(RAM_MAP_CONNECTIONS)
--- local results = generate_menu_header(get_screen().raw_text, get_screen().menu_position)
-tolk.output(tospeak)
-end
-
 function get_menu_item(line, startpos, endpos)
 return line:sub(startpos, endpos)
 end
@@ -1614,7 +1603,6 @@ commands = {
 [{"T"}] = {read_text, false};
 [{"R"}] = {read_tiles, true};
 [{"M"}] = {read_mapname, true};
-[{"1"}] = {read_roammap, false};
 [{"K", "shift"}] = {rename_current, true};
 [{"M", "shift"}] = {rename_map, true};
 [{"S"}] = {camera_move_left, true},
