@@ -52,7 +52,7 @@ Make sure num lock is off while playing the game, or the keys won't work.
 * Shift + y - read current camera position
 
 ## Notes
-New translations for the supported games are welcome. You should translate all files on the lang/<language> and send them to me (or make a PR).
+New translations for the supported games are welcome. You should translate all files on the lang/[code] and send them to me (or make a PR).
 
 ## Contact information
 If you find a bug, or want to contact me about these scripts, my contact information is below.
