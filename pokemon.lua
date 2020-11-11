@@ -1366,10 +1366,12 @@ correctpos = 16
 elseif tile_lines[15]:match("\xf1") then
 correctpos = 14
 end
-if correctpos ~= nil and pos[COLUMN] < correctpos then
+if correctpos ~= nil then
+if pos[COLUMN] < correctpos then
 endpos = correctpos
 else
 startpos = correctpos
+end
 end
 end
 audio.play(scriptpath .. "sounds\\menusel.wav", 0, (200 * (pos[LINE] - 1) / #lines) - 100, 30)
