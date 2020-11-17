@@ -11,7 +11,7 @@ These scripts are designed to work with the VBA-ReRecording GameBoy emulator.
 1. Download the GameBoy emulator VBA Rerecording
 http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 
-2. Get a Pokémon Yellow rom (the script supports english and spanish roms at the momment).
+2. Get a Pokémon Yellow rom (the script supports english, italian and spanish roms at the momment).
 
 3. After you have these, extract and run VBA.
 
@@ -66,3 +66,6 @@ None of this would have been possible without the original Pokecrystal Access Pr
 
 Original project homepage (pokecrystal access): http://allinaccess.com/pca/
 Original source code: https://github.com/tspivey/pokecrystal-access
+
+### Additional contributors
+-ambro86 for the italian translations.
