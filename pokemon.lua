@@ -1379,7 +1379,7 @@ local tile_line = get_menu_item(tile_lines[pos[LINE]], startpos, endpos)
 -- Choose Pokémon menu fix
 if pos[LINE] > results.start_y then
 local add_tileline = get_menu_item(tile_lines[pos[LINE]-1], startpos, endpos)
-if add_tileline:match("\x6e") and tile_line:match("\x71\x62") then
+if add_tileline:match("\x6e") and get_menu_item(tile_lines[results.start_y], startpos, endpos):match("\x6e") then
 tolk.output(translate_tileline(add_tileline))
 end
 end
@@ -1389,7 +1389,7 @@ if pos[LINE] < results.end_y then
 local add_tileline = get_menu_item(tile_lines[pos[LINE]+1], startpos, endpos)
 if (add_tileline:match("\xf1"))
 or (add_tileline:match("\xf0"))
-or (add_tileline:match("\x6e") and not tile_line:match("\x71\x62")) then
+or (add_tileline:match("\x6e") and not get_menu_item(tile_lines[results.start_y], startpos, endpos):match("\x6e")) then
 tolk.output(translate_tileline(add_tileline))
 end
 end
