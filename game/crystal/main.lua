@@ -1,5 +1,7 @@
 SCROLL_INDICATOR_POSITION = 359
 HEALTH_BAR = "\x60\x61"
+HEALTH_BAR_LIMIT = 0x6b
+ENEMY_MAX_HEALTH = 2
 BOULDER_SPRITE = 0x5a
 old_kbd_col = nil
 old_kbd_row = nil

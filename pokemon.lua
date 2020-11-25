@@ -960,29 +960,13 @@ end
 end
 end
 
-BAR_LENGTH = 6
 function get_enemy_health()
-local function read_bar(addr)
-local count
--- no bar here
-if memory.readbyte(addr+BAR_LENGTH) ~= 0x6c then
-return nil
-end
-local total = 0
-for i = 0, BAR_LENGTH - 1 do
-if memory.readbyte(addr+i) == 0x6a then
-total = total +1
-end
-end
-return total
-end
-local enemy = read_bar(RAM_TEXT+(2*20)+4)
-if enemy == nil then
-return nil
-else
+if memory.readbyte(RAM_TEXT+(2*20)+10) == HEALTH_BAR_LIMIT then
 local current = memory.readword(RAM_CURRENT_ENEMY_HEALTH)
-local total = memory.readword(RAM_CURRENT_ENEMY_HEALTH+14)
+local total = memory.readword(RAM_CURRENT_ENEMY_HEALTH+ENEMY_MAX_HEALTH)
 return string.format("%0.2f%%", current/total*100)
+else
+return nil
 end
 end
 
