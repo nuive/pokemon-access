@@ -1040,8 +1040,8 @@ end
 for index = 13, 16 do
 local heading = screen.tile_lines[index]
 if heading == textbox_border
-or textbox_border:find(heading:sub(1, heading:len()-10))
-or textbox_border:find(heading:sub(11, heading:len())) then
+or heading:find(textbox_border:sub(1, textbox_border:len()-10))
+or heading:find(textbox_border:sub(11, textbox_border:len())) then
 if screen.menu_position ~= nil
 and (screen.menu_position[LINE] > index or results.end_y > index+1)
 and not is_full_screen_menu() then

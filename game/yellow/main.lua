@@ -433,10 +433,10 @@ local command = ""
 local count = true
 if is_cut_tile(tile) then
 command = message.translate("bush")
-elseif is_water_tile(tile) and not is_water_tile(last.type) and last.type ~= 0xff then
+elseif is_water_tile(tile) and not is_water_tile(last) and last ~= 0xff then
 command = message.translate("enter_water")
 count = false
-elseif not is_water_tile(tile) and is_water_tile(last.type) and tile ~= 0xff then
+elseif not is_water_tile(tile) and is_water_tile(last) and tile ~= 0xff then
 command = message.translate("exit_water")
 count = false
 end
