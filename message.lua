@@ -29,7 +29,7 @@ default_strings = {
 ["trashcan"] = "Trash Can",
 ["use_hm"] = "Use HMs",
 ["not_use_hm"] = "Do not use HMs",
-["tree"] = "Tree",
+["bush"] = "Bush",
 ["on_way"] = "on way",
 ["closed_door"] = "Closed Door",
 ["enter_water"] = "Enter in water",
@@ -37,18 +37,34 @@ default_strings = {
 ["statue"] = "Statue",
 ["cliff"] = "Cliff",
 ["quiz"] = "Quiz",
+["bookshelf"] = "Bookshelf",
+["radio"] = "Radio",
+["martshelf"] = "Mart Shelf",
+["tv"] = "TV",
+["window"] = "Window",
+["incense_burner"] = "Incense Burner",
+["tree"] = "Tree",
+["whirlpool"] = "Whirlpool",
+["waterfall"] = "Waterfall",
+["unown_puzzle_tip"] = "Sort the numbers. Leave a zero-border around them.",
+["unown_puzzle_pick_piece"] = "You have to pick a piece first.",
 }
 
-function init(string_list)
-strings = string_list
+function init(lang)
+local f = loadfile(scriptpath .. "\\message\\" .. lang .. ".lua")
+if f ~= nil then
+f()
+end
 end
 
 function translate(id, ...)
 local message = ""
 if strings ~= nil and strings[id] ~= nil then
 message = strings[id]
-else
+elseif default_strings ~= nil and default_strings[id] ~= nil then
 message = default_strings[id]
+else
+message = id
 end
 for i = 1, select("#", ...) do
 message = string.gsub(message, "%%" .. i, select(i, ...))

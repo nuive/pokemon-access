@@ -1,7 +1,10 @@
+# Pokémon Access
+# Versión 2.0
+
 ## Introduction
 
 The Pokemon access project is an improved version of the Pokecrystal Access Project, a set of scripts which initially provided access to Pokémon Crystal for people using a screen reader.
-The goal of this project is to extend this functionality throughout all the Pokémon games. Current version has support only for Pokémon Yellow, but in the future it will include, if it's possible, support for several games unified into a single script including an improved version of the initial Pokecrystal Access release.
+The goal of this project is to extend this functionality throughout all the Pokémon games. Current version has support for Pokémon Yellow and Crystal, but in the future it will include, if it's possible, support for several games unified into a single script.
 
 At the momment, this readme will be essentially a copy of the readme provided with the Pokecrystal Access release, with only minnor  changes.
 
@@ -11,9 +14,12 @@ These scripts are designed to work with the VBA-ReRecording GameBoy emulator.
 1. Download the GameBoy emulator VBA Rerecording
 http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 
-2. Get a Pokémon Yellow rom (the script supports english, italian and spanish roms at the momment).
+2. Get a compatible rom. Currently, the script supports the following:
 
-3. After you have these, extract and run VBA.
+-Pokémon Yellow: English, Spanish and Italian.
+-Pokémon Crystal: English and Spanish.
+
+3. After you have the desired rom, extract and run VBA.
 
 4. Go to the Options menu, Head-Up Display, Show Speed, None (alt-o, h, s, enter)
 Without this, NVDA reads the title bar every time it changes.
@@ -51,8 +57,11 @@ Make sure num lock is off while playing the game, or the keys won't work.
 * add shift to s/f/e/c to move the camera, ignoring walls
 * Shift + y - read current camera position
 
+### Crystal exclusive keys
+* shift+d - say which piece you are holding (on the unown puzzles)
+
 ## Notes
-New translations for the supported games are welcome. You should translate all files on the lang/[code] and send them to me (or make a PR).
+New translations for the supported games are welcome. You should translate the files "maps.lua" and "sprites.lua" located on the game/[game]/[lang]  ([lang] can be any of the existing languages, choose which is better for you to translate from). You should translate asswell the file messages/[lang].lua (applies same rules). Once translated, you can send these files to me (or make a PR).
 
 ## Contact information
 If you find a bug, or want to contact me about these scripts, my contact information is below.
@@ -68,4 +77,4 @@ Original project homepage (pokecrystal access): http://allinaccess.com/pca/
 Original source code: https://github.com/tspivey/pokecrystal-access
 
 ### Additional contributors
--ambro86 for the italian translations.
+-ambro86 for the italian translations for Pokémon Yellow.
