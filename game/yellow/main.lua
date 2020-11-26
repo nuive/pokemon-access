@@ -295,7 +295,7 @@ end
 function get_block(mapx, mapy)
 local width = memory.readbyte(RAM_MAP_WIDTH)
 local row_width = width+6
-local ptr = RAM_MAP+row_width*3
+local ptr = RAM_OVERWORLD_MAP+row_width*3
 local skip_rows = bit.rshift(mapy, 1)
 local skip_cols = bit.rshift(mapx, 1) + 3
 local block = memory.readbyte(ptr+(skip_rows*row_width)+skip_cols)
@@ -510,6 +510,7 @@ x, y = get_camera_xy()
 else
 x, y = get_player_xy()
 end
+
 if check_preledge(get_map_collisions(), y, x) then
 audio.play(scriptpath .. "sounds\\s_mad.wav", 0, pan, vol)
 end
@@ -561,12 +562,6 @@ end
 memory.registerexec(ROM_FOOTSTEP_FUNCTION, function()
 if on_map() then
 local player_x, player_y = get_player_xy()
-if player_x == 0xff then
-player_x = -1
-end
-if player_y == 0xff then
-player_y = -1
-end
 local collisions = get_map_collisions()
 local type = collisions[player_y][player_x]
 camera_x = -7

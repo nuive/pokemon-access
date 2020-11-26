@@ -427,6 +427,10 @@ function read_special_variable_text()
 if screen.tile_lines[8]:find("\x7a\x01\x7a") then
 tolk.output(translate_tileline(screen.tile_lines[10]))
 end
+-- day set fix
+if screen.tile_lines[4]:find("\x7a\xef\x7a") then
+tolk.output(translate_tileline(screen.tile_lines[6]))
+end
 -- Fly destination fix
 if screen.tile_lines[1]:find("\xe6\x7f") then
 tolk.output(translate_tileline(screen.tile_lines[2]))
@@ -499,12 +503,6 @@ end
 memory.registerexec(ROM_FOOTSTEP_FUNCTION, function()
 if on_map() then
 local player_x, player_y = get_player_xy()
-if player_x == 0xff then
-player_x = -1
-end
-if player_y == 0xff then
-player_y = -1
-end
 local collisions = get_map_collisions()
 local type = collisions[player_y][player_x]
 camera_x = -7

@@ -1,10 +1,10 @@
 # Pokémon Access
-# Version 2.0
+# Version 2.1
 
 ## Introduction
 
 The Pokemon access project is an improved version of the Pokecrystal Access Project, a set of scripts which initially provided access to Pokémon Crystal for people using a screen reader.
-The goal of this project is to extend this functionality throughout all the Pokémon games. Current version has support for Pokémon Yellow and Crystal, but in the future it will include, if it's possible, support for several games unified into a single script.
+The goal of this project is to extend this functionality throughout all the Pokémon games. Current version has support for Pokémon Yellow, Gold, Silver and Crystal, but in the future it will include, if it's possible, support for several games unified into a single script.
 
 At the momment, this readme will be essentially a copy of the readme provided with the Pokecrystal Access release, with only minnor  changes.
 
@@ -17,7 +17,7 @@ http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 2. Get a compatible rom. Currently, the script supports the following:
 
 -Pokémon Yellow: English, Spanish and Italian.
--Pokémon Crystal: English and Spanish.
+-Pokémon Gold, Silver and Crystal: English and Spanish.
 
 3. After you have the desired rom, extract and run VBA.
 
@@ -57,7 +57,7 @@ Make sure num lock is off while playing the game, or the keys won't work.
 * add shift to s/f/e/c to move the camera, ignoring walls
 * Shift + y - read current camera position
 
-### Crystal exclusive keys
+### Gold/SILVER/Crystal exclusive keys
 * shift+d - say which piece you are holding (on the unown puzzles)
 
 ## Notes

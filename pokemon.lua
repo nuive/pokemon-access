@@ -5,6 +5,8 @@ local inputbox = require "Inputbox"
 scriptpath = debug.getinfo(1, "S").source:sub(2):match("^.*\\")
 codemap = {
 ["APS"] = "yellow",
+["AAU"] = "gold",
+["AAX"] = "silver",
 ["BYT"] = "crystal",
 }
 langmap = {
@@ -37,11 +39,22 @@ pathfind_hm = false
 inpassible_tiles = {}
 
 function load_game(game)
-local f = loadfile(scriptpath .. "\\game\\" .. game .. "\\main.lua")
+local success = true
+local f = loadfile(scriptpath .. "game\\" .. game .. "\\main.lua")
 if f ~= nil then
 f()
-return true
+return success
+else
+for _, v in ipairs(SCRIPT_FILES) do
+f = loadfile(scriptpath .. "game\\common\\" .. v .. ".lua")
+if f ~= nil then
+f()
+else
+success = false
 end
+end
+end
+return success
 end
 
 function load_language(game, lang)
@@ -49,8 +62,8 @@ if lang == nil then
 tolk.output("Language not supported.")
 return false
 end
-local path = scriptpath .. "\\game\\" .. game .. "\\" .. lang .. "\\"
-local t = {"chars.lua", "fonts.lua", "maps.lua", "ram.lua", "sprites.lua"}
+local path = scriptpath .. "game\\" .. game .. "\\" .. lang .. "\\"
+local t = {"chars.lua", "fonts.lua", "maps.lua", "offset.lua", "sprites.lua"}
 local partial = false
 for i, v in ipairs(t) do
 local f = loadfile(path .. v)
@@ -59,7 +72,7 @@ f()
 else
 if v == "chars.lua"
 or v == "fonts.lua"
-or v == "ram.lua" then
+or v == "offset.lua" then
 tolk.output("Language not supported.")
 return false
 else
@@ -1097,7 +1110,15 @@ return message.translate("unknown")
 end
 
 function get_player_xy()
-return memory.readbyte(RAM_PLAYER_X), memory.readbyte(RAM_PLAYER_Y)
+local x = memory.readbyte(RAM_PLAYER_X)
+local y = memory.readbyte(RAM_PLAYER_Y)
+if x >= memory.readbyte(RAM_MAP_WIDTH) * 2 then
+x = -1
+end
+if y >= memory.readbyte(RAM_MAP_HEIGHT) * 2 then
+y = -1
+end
+return x, y
 end
 
 function get_camera_xy()
