@@ -1,10 +1,10 @@
 # Pokémon Access
-# Version 2.1
+# Version 2.2
 
 ## Introduction
 
 The Pokemon access project is an improved version of the Pokecrystal Access Project, a set of scripts which initially provided access to Pokémon Crystal for people using a screen reader.
-The goal of this project is to extend this functionality throughout all the Pokémon games. Current version has support for Pokémon Yellow, Gold, Silver and Crystal, but in the future it will include, if it's possible, support for several games unified into a single script.
+The goal of this project is to extend this functionality throughout all the Pokémon games. Current version has support for Pokémon Red, Blue, Yellow, Gold, Silver and Crystal, but in the future it will include, if it's possible, support for more games unified into this script.
 
 At the momment, this readme will be essentially a copy of the readme provided with the Pokecrystal Access release, with only minnor  changes.
 
@@ -16,7 +16,7 @@ http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 
 2. Get a compatible rom. Currently, the script supports the following:
 
--Pokémon Yellow: English, Spanish and Italian.
+-Pokémon Red, Blue and Yellow: English, Spanish and Italian.
 -Pokémon Gold, Silver and Crystal: English and Spanish.
 
 3. After you have the desired rom, extract and run VBA.

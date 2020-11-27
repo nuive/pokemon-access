@@ -17,6 +17,16 @@ langmap = {
 ["S"] = "es",
 }
 game_checksum = {
+["red_blue"] = {
+-- red
+[0x9d0a] = "en",
+[0x384a] = "es",
+[0x5e9c] = "it",
+-- blue
+[0x9d0a] = "en",
+[0x14d7] = "es",
+[0x5e9c] = "it",
+},
 ["yellow"] = {
 [0x047c] = "en",
 },
@@ -43,8 +53,8 @@ local success = true
 local f = loadfile(scriptpath .. "game\\" .. game .. "\\main.lua")
 if f ~= nil then
 f()
-return success
-else
+end
+if SCRIPT_FILES ~=nil then
 for _, v in ipairs(SCRIPT_FILES) do
 f = loadfile(scriptpath .. "game\\common\\" .. v .. ".lua")
 if f ~= nil then
@@ -585,7 +595,7 @@ end
 
 function set_pathfind_hm()
 	pathfind_hm = not pathfind_hm
-update_inpassible_hm()
+update_inpassible_tiles()
 	if pathfind_hm then
 		tolk.output(message.translate("use_hm"))
 	else
@@ -1135,17 +1145,13 @@ local code = ""
 for i = 0, 2 do
 code = code .. string.char(game_title[12+i])
 end
-local lang = string.char(game_title[15])
 if codemap[code] then
+local lang = string.char(game_title[15])
 game = codemap[code]
 language = langmap[lang]
-else
-parse_old_title(game_title)
-end
-for _, v in pairs(codemap) do
-if v == game then
 return true
-end
+else
+return parse_old_title(game_title)
 end
 tolk.output("Game not supported.")
 return false
@@ -1160,9 +1166,20 @@ i = i + 1
 end
 game = game:lower()
 local checksum = memory.gbromreadbyte(0x14e)*256 + memory.gbromreadbyte(0x14f)
-if game_checksum[game] ~= nil and game_checksum[game][checksum] ~= nil then
+for v in pairs(game_checksum) do
+if v:find(game) ~= nil then
+game = v
+if game_checksum[game][checksum] ~= nil then
 language = game_checksum[game][checksum]
+return true
+else
+tolk.output("Language not supported.")
+return false
 end
+end
+end
+tolk.output("Game not supported.")
+return false
 end
 
 commands = {

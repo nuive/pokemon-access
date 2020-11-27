@@ -1,7 +1,7 @@
 maps = {
   [257] = "Pokémon Center",
   [258] = "Gym",
-  [259] = "Voltorb House",
+  [259] = "Trade House",
   [260] = "House Beta",
   [261] = "Punishment Speech House",
   [262] = "Good Rod House",
@@ -114,7 +114,7 @@ maps = {
   [1281] = "Gym",
   [1282] = "Gym",
   [1283] = "Dragon Speech House",
-  [1284] = "Dodrio Trade House",
+  [1284] = "Trade House",
   [1285] = "Mart",
   [1286] = "Pokémon Center",
   [1287] = "Move Deleter's House",

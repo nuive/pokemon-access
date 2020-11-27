@@ -1,4 +1,3 @@
-SCRIPT_FILES = {"gsc"}
 RAM_SCREEN = 0x8800
 RAM_IN_BATTLE = 0xd116
 RAM_TEXT = 0xc3a0
@@ -40,14 +39,14 @@ RAM_KEYBOARD_X = 0xc538
 RAM_KEYBOARD_Y = 0xc539
 RAM_UNOWN_PUZZLE = 0xc5d0
 RAM_PUZZLE_CURSOR = 0xce65
-ROM_FOOTSTEP_FUNCTION = 0x54c1
+ROM_FOOTSTEP_FUNCTION = 0xd4c1
 ROM_TILE_FLAGS = 0xfb4be
 KEYBOARD_STRING = "DEL   END"
 KEYBOARD_UPPER = {
 {"A", "B", "C", "D", "E", "F", "G", "H", "I"},
 {"J", "K", "L", "M", "N", "O", "P", "Q", "R"},
-{"S", "T", "U", "V", "W", "X", "Y", "Z"},
-{"-", "?", "!", "/", ".", ",", "space", "space", "space"},
+{"S", "T", "U", "V", "W", "X", "Y", "Z", "SPACE"},
+{"-", "?", "!", "/", ".", ",", "SPACE", "SPACE", "SPACE"},
 {"lower", "lower", "lower", "DEL", "DEL", "DEL", "END", "END", "END"}
 }
 

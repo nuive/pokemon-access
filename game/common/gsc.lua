@@ -94,7 +94,7 @@ end
 return command, count
 end
 
-function update_inpassible_hm()
+function update_inpassible_tiles()
 local ptr = ROM_TILE_FLAGS
 for i=0x00, 0xff do
 if is_cut_tile(i) or is_water_tile(i) then
@@ -500,8 +500,8 @@ old_puzzle_cursor = nil
 end
 end
 
-memory.registerexec(ROM_FOOTSTEP_FUNCTION, function()
-if on_map() then
+memory.registerexec((ROM_FOOTSTEP_FUNCTION%0x4000)+0x4000, function()
+if memory.readbyte(HRAM_ROM_BANK) == math.floor(ROM_FOOTSTEP_FUNCTION / 0x4000) then
 local player_x, player_y = get_player_xy()
 local collisions = get_map_collisions()
 local type = collisions[player_y][player_x]
