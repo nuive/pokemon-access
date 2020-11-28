@@ -513,15 +513,44 @@ tolk.output(word)
 end
 
 function read_special_variable_text()
-return
+-- town map fix
+if screen.tile_lines[2]:find("\x66\x67\x67\x67\x68\x64") then
+tolk.output(translate_tileline(screen.tile_lines[1]))
+end
 end
 
+function in_pokedex()
+if screen.tile_lines[1]:find("\x7f\x71\x7f") ~= nil
+and screen.tile_lines[7]:find("\x7f\x70\x7a") then
+return true
+end
+return false
+end
+
+pokedex_info = nil
 function handle_special_cases()
 if screen:keyboard_showing() then
 handle_keyboard()
 else
 kbd_pos = nil
 end -- handling keyboard
+-- pokedex fixes
+if in_pokedex() then
+local startpos = screen.tile_lines[1]:find("\x7f\x71\x7f")
+local seen = trim(translate_tileline(get_menu_item(screen.tile_lines[2], startpos+1)))
+local num_seen = trim(translate_tileline(get_menu_item(screen.tile_lines[3], startpos+1)))
+local have = trim(translate_tileline(get_menu_item(screen.tile_lines[5], startpos+1)))
+local num_have = trim(translate_tileline(get_menu_item(screen.tile_lines[6], startpos+1)))
+if seen ~= "" then
+local tospeak = seen .. ": " .. num_seen .. "; " .. have .. ": " .. num_have
+if tospeak ~= pokedex_info then
+tolk.output(tospeak)
+pokedex_info = tospeak
+end
+end
+else
+pokedex_info = nil
+end
 end
 
 memory.registerexec(ROM_FOOTSTEP_FUNCTION, function()

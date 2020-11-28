@@ -19,9 +19,9 @@ langmap = {
 game_checksum = {
 ["red_blue"] = {
 -- red
-[0x9d0a] = "en",
+[0x91e6] = "en",
 [0x384a] = "es",
-[0x5e9c] = "it",
+[0x89d2] = "it",
 -- blue
 [0x9d0a] = "en",
 [0x14d7] = "es",
@@ -856,6 +856,12 @@ tolk.output(name)
 end
 
 function get_menu_item(line, startpos, endpos)
+if startpos == nil then
+startpos = 1
+end
+if endpos == nil then
+endpos = 20
+end
 return line:sub(startpos, endpos)
 end
 

@@ -16,8 +16,8 @@ http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 
 2. Get a compatible rom. Currently, the script supports the following:
 
--Pokémon Red, Blue and Yellow: English, Spanish and Italian.
--Pokémon Gold, Silver and Crystal: English and Spanish.
+-Pokémon Red, Blue, Yellow and Crystal: English, Spanish and Italian.
+-Pokémon Gold and Silver: English and Spanish.
 
 3. After you have the desired rom, extract and run VBA.
 
