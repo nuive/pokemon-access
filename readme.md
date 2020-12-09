@@ -1,5 +1,5 @@
 # Pokémon Access
-# Version 2.2
+# Version 2.3
 
 ## Introduction
 
@@ -16,8 +16,8 @@ http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 
 2. Get a compatible rom. Currently, the script supports the following:
 
--Pokémon Red, Blue, Yellow and Crystal: English, Spanish and Italian.
--Pokémon Gold and Silver: English and Spanish.
+-Pokémon Red, Blue and Yellow: English, French, Spanish and Italian.
+-Pokémon Gold, Silver and Crystal: English, Spanish and Italian.
 
 3. After you have the desired rom, extract and run VBA.
 
@@ -60,6 +60,25 @@ Make sure num lock is off while playing the game, or the keys won't work.
 ### Gold/SILVER/Crystal exclusive keys
 * shift+d - say which piece you are holding (on the unown puzzles)
 
+## HackRom support
+Current version of the script has extended support for hackroms of the games previously mentioned.
+In the future, you'll have an in-game feature to tell the script if you are playing a hack or not. For now, you have to edit the file hacks.lua. You have to know  basic lua structures in order to do that.
+
+Regarding "hacks.lua", keep in mind that...
+{
+-- base-game structure
+  ["crystal"] = { -- base-game folder
+-- hackrom structure
+    [0x8447] = { -- rom hack checksum (you can get it on VBA-RR (file/rom information)
+      game = "crystal-clear", -- script folder of the hack (can be the same as base-game)
+      language = "en" -- language folder of the hack
+    }, -- end hackrom structure
+-- paste here previous structure if you want to add more hacks of Pokémon Crystal
+  }, -- end base-game structure
+  -- paste here previous structure if you want to add hacks of different games (gold, blue, yellow) changing the apropriate values
+}
+
+
 ## Notes
 New translations for the supported games are welcome. You should translate the files "maps.lua" and "sprites.lua" located on the game/[game]/[lang]  ([lang] can be any of the existing languages, choose which is better for you to translate from). You should translate asswell the file messages/[lang].lua (applies same rules). Once translated, you can send these files to me (or make a PR).
 
@@ -77,4 +96,6 @@ Original project homepage (pokecrystal access): http://allinaccess.com/pca/
 Original source code: https://github.com/tspivey/pokecrystal-access
 
 ### Additional contributors
--ambro86 for the italian translations for Pokémon Yellow.
+-ambro86 for the italian translations.
+-pika-san for the french translations.
+

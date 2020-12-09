@@ -1,3 +1,5 @@
+CORE_FILES = {"gsc"}
+
 RAM_SCREEN = 0x8800
 RAM_IN_BATTLE = 0xd116
 RAM_TEXT = 0xc3a0

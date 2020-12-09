@@ -1,8 +1,10 @@
+CORE_FILES = {"gsc"}
+
 RAM_SCREEN = 0x8800
 RAM_IN_BATTLE = 0xd22d
 RAM_TEXT = 0xc4a0
-RAM_OVERWORLD_MAP = 0xc800
 RAM_CURRENT_ENEMY_HEALTH = 0xd216
+RAM_OVERWORLD_MAP = 0xc800
 RAM_PLAYER_NAME = 0xd47d
 RAM_MOM_NAME = 0xd488
 RAM_RIVAL_NAME = 0xd493
@@ -39,22 +41,22 @@ RAM_KEYBOARD_X = 0xc330
 RAM_KEYBOARD_Y = 0xc331
 RAM_UNOWN_PUZZLE = 0xc6d0
 RAM_PUZZLE_CURSOR = 0xcf65
-ROM_FOOTSTEP_FUNCTION = 0xd484
+ROM_FOOTSTEP_FUNCTION = 0xd4b7
 ROM_TILE_FLAGS = 0x4ce1f
-KEYBOARD_STRING = "BORRA  FIN"
+KEYBOARD_STRING = "CANC  FINE"
 KEYBOARD_UPPER = {
 {"A", "B", "C", "D", "E", "F", "G", "H", "I"},
 {"J", "K", "L", "M", "N", "O", "P", "Q", "R"},
-{"S", "T", "U", "V", "W", "X", "Y", "Z", "ESPACIO"},
-{"-", "?", "!", "/", ".", ",", "ESPACIO", "ESPACIO", "ESPACIO"},
-{"minús", "minús", "minús", "BORRA", "BORRA", "BORRA", "FIN", "FIN", "FIN"}
+{"S", "T", "U", "V", "W", "X", "Y", "Z", "SPAZIO"},
+{"-", "?", "!", "/", ".", ",", "SPAZIO", "SPAZIO", "SPAZIO"},
+{"minus", "minus", "minus", "CANC", "CANC", "CANC", "FINE", "FINE", "FINE"}
 }
 
 KEYBOARD_LOWER = {
 {"a", "b", "c", "d", "e", "f", "g", "h", "i"},
 {"j", "k", "l", "m", "n", "o", "p", "q", "r"},
-{"s", "t", "u", "v", "w", "x", "y", "z", "espacio"},
+{"s", "t", "u", "v", "w", "x", "y", "z", "spazio"},
 {"×", "(", ")", ":", ";", "[", "]", "PK", "MN"},
-{"MAYÚS", "MAYÚS", "MAYÚS", "BORRA", "BORRA", "BORRA", "FIN", "FIN", "FIN"}
+{"MAIUS", "MAIUS", "MAIUS", "CANC", "CANC", "CANC", "FINE", "FINE", "FINE"}
 }
-KEYBOARD_UPPER_STRING = "MAYÚS"
+KEYBOARD_UPPER_STRING = "MAIUS"

@@ -21,10 +21,12 @@ game_checksum = {
 -- red
 [0x91e6] = "en",
 [0x384a] = "es",
+[0x7afc] = "fr",
 [0x89d2] = "it",
 -- blue
 [0x9d0a] = "en",
 [0x14d7] = "es",
+[0x56a4] = "fr",
 [0x5e9c] = "it",
 },
 ["yellow"] = {
@@ -48,49 +50,66 @@ last_camera_tile = 0xff
 pathfind_hm = false
 inpassible_tiles = {}
 
-function load_game(game)
-local success = true
-local f = loadfile(scriptpath .. "game\\" .. game .. "\\main.lua")
+function load_game()
+if language == nil then
+tolk.output("Language not supported.")
+return false
+end
+local f = nil
+-- load memory and text values
+local path = scriptpath .. "game\\" .. game .. "\\" .. language .. "\\"
+local t = {"chars.lua", "fonts.lua", "memory.lua"}
+for i, v in ipairs(t) do
+f = loadfile(path .. v)
 if f ~= nil then
 f()
+else
+tolk.output("Language not supported.")
+return false
 end
-if SCRIPT_FILES ~=nil then
-for _, v in ipairs(SCRIPT_FILES) do
+end
+-- load the core scripts
+if CORE_FILES ~= nil then
+for _, v in ipairs(CORE_FILES) do
 f = loadfile(scriptpath .. "game\\common\\" .. v .. ".lua")
 if f ~= nil then
 f()
 else
-success = false
+tolk.output("Problem loading core script.")
+return false
 end
 end
+else
+tolk.output("Core script is missing.")
+return false
 end
-return success
+-- load specific game script
+f = loadfile(scriptpath .. "game\\" .. game .. "\\main.lua")
+if f ~= nil then
+f()
+else
+tolk.output("Warning: No specific game script is provided. Accessibility could be limited.")
+end
+return load_language()
 end
 
-function load_language(game, lang)
-if lang == nil then
+function load_language()
+if language == nil then
 tolk.output("Language not supported.")
 return false
 end
-local path = scriptpath .. "game\\" .. game .. "\\" .. lang .. "\\"
-local t = {"chars.lua", "fonts.lua", "maps.lua", "offset.lua", "sprites.lua"}
+local path = scriptpath .. "game\\" .. game .. "\\" .. language .. "\\"
+local t = {"maps.lua", "sprites.lua"}
 local partial = false
 for i, v in ipairs(t) do
 local f = loadfile(path .. v)
 if f ~= nil then
 f()
 else
-if v == "chars.lua"
-or v == "fonts.lua"
-or v == "offset.lua" then
-tolk.output("Language not supported.")
-return false
-else
 partial = true
 end
 end
-end
-message.set_strings(lang)
+message.set_strings(language)
 if partial then
 tolk.output("Warning: Language not fully supported.")
 end
@@ -143,7 +162,7 @@ line_number = line_number + 1
 for j = 0, 19 do
 local char = raw_text[i+j]
 tile_line = tile_line .. string.char(char)
-if char == 0xed then
+if char == 0xed or char == 0xeb then
 menu_position = {((i-1)/20)+1, j+1}
 elseif char == 0xec then
 text_over_menu = true
@@ -827,7 +846,7 @@ write_names()
 end
 
 function write_names()
-local file = io.open("names.lua", "wb")
+local file = io.open(names_file, "wb")
 file:write(serpent.block(names, {comment=false}))
 io.close(file)
 tolk.output(message.translate("names_saved"))
@@ -991,8 +1010,8 @@ end
 
 function get_enemy_health()
 if memory.readbyte(RAM_TEXT+(2*20)+10) == HEALTH_BAR_LIMIT then
-local current = memory.readword(RAM_CURRENT_ENEMY_HEALTH)
-local total = memory.readword(RAM_CURRENT_ENEMY_HEALTH+ENEMY_MAX_HEALTH)
+local current = memory.readbyte(RAM_CURRENT_ENEMY_HEALTH) * 0x100 + memory.readbyte(RAM_CURRENT_ENEMY_HEALTH+1)
+local total = memory.readbyte(RAM_CURRENT_ENEMY_HEALTH+ENEMY_MAX_HEALTH) * 256 + memory.readbyte(RAM_CURRENT_ENEMY_HEALTH+ENEMY_MAX_HEALTH+1)
 return string.format("%0.2f%%", current/total*100)
 else
 return nil
@@ -1128,10 +1147,10 @@ end
 function get_player_xy()
 local x = memory.readbyte(RAM_PLAYER_X)
 local y = memory.readbyte(RAM_PLAYER_Y)
-if x >= memory.readbyte(RAM_MAP_WIDTH) * 2 then
+if x > memory.readbyte(RAM_MAP_WIDTH) * 2 then
 x = -1
 end
-if y >= memory.readbyte(RAM_MAP_HEIGHT) * 2 then
+if y > memory.readbyte(RAM_MAP_HEIGHT) * 2 then
 y = -1
 end
 return x, y
@@ -1145,7 +1164,8 @@ return camera_x, camera_y
 end
 end
 
-function get_game_code()
+function get_game()
+local valid = false
 local game_title = memory.gbromreadbyterange(0x134, 16)
 local code = ""
 for i = 0, 2 do
@@ -1155,27 +1175,37 @@ if codemap[code] then
 local lang = string.char(game_title[15])
 game = codemap[code]
 language = langmap[lang]
-return true
+valid = true
 else
-return parse_old_title(game_title)
+if parse_old_title(game_title) then
+valid = true
+else
+return false
+end
+end
+if valid then
+-- check if it's hack
+set_hackrom_values()
+return load_game()
 end
 tolk.output("Game not supported.")
 return false
 end
 
 function parse_old_title(title)
-game = ""
+oldgame = ""
 local i = 9
 while title[i] ~= 0 do
-game = game .. string.char(title[i])
+oldgame = oldgame .. string.char(title[i])
 i = i + 1
 end
-game = game:lower()
+oldgame = oldgame:lower()
 local checksum = memory.gbromreadbyte(0x14e)*256 + memory.gbromreadbyte(0x14f)
 for v in pairs(game_checksum) do
-if v:find(game) ~= nil then
-game = v
-if game_checksum[game][checksum] ~= nil then
+if v:find(oldgame) ~= nil then
+oldgame = v
+if game_checksum[oldgame][checksum] ~= nil then
+game = oldgame
 language = game_checksum[game][checksum]
 return true
 else
@@ -1186,6 +1216,17 @@ end
 end
 tolk.output("Game not supported.")
 return false
+end
+
+function set_hackrom_values()
+loaded, hacks = load_table("hacks.lua")
+if loaded ~= nil and hacks[game] ~= nil then
+local checksum = memory.gbromreadbyte(0x14e)*256 + memory.gbromreadbyte(0x14f)
+if hacks[game][checksum] ~= nil then
+language = hacks[game][checksum].language
+game = hacks[game][checksum].game
+end
+end
 end
 
 commands = {
@@ -1221,19 +1262,15 @@ chars = {}
 fonts = {}
 maps = {}
 sprites = {}
-res, names = load_table("names.lua")
+-- get current game and language
+if not get_game() then
+return
+end
+
+names_file = "names_" .. game .. "_" .. language .. ".lua"
+res, names = load_table(names_file)
 if res == nil then
 names = {}
-end
--- get current game and language
-if not get_game_code() then
-return
-end
-if not load_language(game, language) then
-return
-end
-if not load_game(game) then
-return
 end
 
 counter = 0

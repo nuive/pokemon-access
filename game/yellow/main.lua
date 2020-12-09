@@ -1,4 +1,3 @@
-SCRIPT_FILES = {"rby"}
 BOULDER_SPRITE = 0x49
 
 function is_water_tile(tile)

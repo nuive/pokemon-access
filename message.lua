@@ -46,7 +46,7 @@ default_strings = {
 ["tree"] = "Tree",
 ["whirlpool"] = "Whirlpool",
 ["waterfall"] = "Waterfall",
-["unown_puzzle_tip"] = "Sort the numbers. Leave a zero-border around them.",
+["unown_puzzle_tip"] = "Sort the numbers. Leave a zero-border around them. Press Start to cancel.",
 ["unown_puzzle_pick_piece"] = "You have to pick a piece first.",
 }
 

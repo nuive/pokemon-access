@@ -1,3 +1,5 @@
+CORE_FILES = {"rby"}
+
 RAM_SCREEN = 0x8800
 RAM_SAVED_BANK = 0xcf0d
 RAM_IN_BATTLE = 0xd05b

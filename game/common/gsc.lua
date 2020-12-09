@@ -29,8 +29,7 @@ end
 function get_inpassible_tiles()
 local ptr = ROM_TILE_FLAGS
 for i=0x00, 0xff do
-if memory.gbromreadbyte(ptr + i ) % 0x10 ~= 0-- specific tile walls
-or (i >= 0xb0 and i < 0xc0) then
+if memory.gbromreadbyte(ptr + i ) % 0x10 ~= 0 then
 inpassible_tiles[i] = true
 else
 inpassible_tiles[i] = false
@@ -316,6 +315,66 @@ end
 return result
 end
 
+function jump_ledge(tile, x, y)
+if tile < 0xa0 or tile > 0xaf then
+return false
+end
+if y == 0 then
+if x == 2
+and (tile == 0xa0
+or tile == 0xa4
+or tile == 0xa6) then
+return true
+elseif x == -2
+and (tile == 0xa1
+or tile == 0xa5
+or tile == 0xa7) then
+return true
+end
+elseif x == 0 then
+if y == -2
+and (tile == 0xa2
+or tile == 0xa6
+or tile == 0xa7) then
+return true
+elseif y == 2
+and (tile == 0xa3
+or tile == 0xa4
+or tile == 0xa5) then
+return true
+end
+end
+return false
+end
+
+function is_wall_tile(tile, dir)
+if tile < 0xb0 or tile > 0xcf then
+return false
+end
+if dir == RIGHT
+and (tile == 0xb0 or tile == 0xc0
+or tile == 0xb4 or tile == 0xc4
+or tile == 0xb6 or tile == 0xc6) then
+return true
+elseif dir == LEFT
+and (tile == 0xb1 or tile == 0xc1
+or tile == 0xb5 or tile == 0xc5
+or tile == 0xb7 or tile == 0xc7) then
+return true
+elseif dir == UP
+and (tile == 0xb2 or tile == 0xc2
+or tile == 0xb6 or tile == 0xc6
+or tile == 0xb7 or tile == 0xc7) then
+return true
+elseif dir == DOWN
+and (tile == 0xb3 or tile == 0xc3
+or tile == 0xb4 or tile == 0xc4
+or tile == 0xb5 or tile == 0xc5) then
+return true
+end
+return false
+end
+
 valid_path = function (node, neighbor)
 for dir = DOWN, RIGHT, 4 do
 local dir_x, dir_y = decode_direction(dir)
@@ -326,34 +385,10 @@ and ((has_talking_over_around(node.special_tiles, dir) and neighbor.is_dest)) th
 return true
 end
 end
-if node.type == 0xa0
-and neighbor.x == node.x+2 and neighbor.y == node.y then
+if jump_ledge(node.type, neighbor.x - node.x, neighbor.y - node.y) then
 return true
-elseif node.type == 0xa1
-and neighbor.x == node.x-2 and neighbor.y == node.y then
-return true
-elseif node.type == 0xa2
-and neighbor.x == node.x and neighbor.y == node.y-2 then
-return true
-elseif node.type == 0xa3
-and neighbor.x == node.x and neighbor.y == node.y+2 then
-return true
-elseif node.type == 0xa4
-and ((neighbor.x == node.x and neighbor.y == node.y+2)
-or (neighbor.x == node.x+2 and neighbor.y == node.y)) then
-return true
-elseif node.type == 0xa5
-and ((neighbor.x == node.x and neighbor.y == node.y+2)
-or (neighbor.x == node.x-2 and neighbor.y == node.y)) then
-return true
-elseif node.type == 0xa6
-and ((neighbor.x == node.x and neighbor.y == node.y-2)
-or (neighbor.x == node.x+2 and neighbor.y == node.y)) then
-return true
-elseif node.type == 0xa7
-and ((neighbor.x == node.x and neighbor.y == node.y-2)
-or (neighbor.x == node.x-2 and neighbor.y == node.y)) then
-return true
+elseif is_wall_tile(node.type, encode_direction(neighbor.x - node.x, neighbor.y - node.y)) or is_wall_tile(neighbor.type, encode_direction(node.x - neighbor.x, node.y - neighbor.y)) then
+return false
 elseif astar.dist_between(node, neighbor) ~= 1 then
 return false
 elseif astar.dist_between(node, neighbor) == 1 and neighbor.is_dest then
