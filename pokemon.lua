@@ -626,7 +626,14 @@ function pathfind()
 local info = get_map_info()
 reset_current_item_if_needed(info)
 local obj = info.objects[current_item]
-find_path_to(obj)
+find_path_to(obj, true)
+end
+
+function pathfind_move()
+local info = get_map_info()
+reset_current_item_if_needed(info)
+local obj = info.objects[current_item]
+find_path_to(obj, false)
 end
 
 function read_item(item)
@@ -700,7 +707,7 @@ end
 return false
 end
 
-function find_path_to(obj)
+function find_path_to(obj, speakPath)
 local path
 local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
 local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
@@ -747,7 +754,11 @@ if path == nil then
 tolk.output(message.translate("no_path"))
 return
 end
+if speakPath then
 speak_path(clean_path(path))
+else 
+move_path(clean_path(path))
+end
 end
 
 function has_talking_over_around(value, dir)
@@ -826,6 +837,32 @@ command = command .. v[1]
 tolk.output(command)
 end
 end -- function
+
+function move_path(path)
+for _, v in ipairs(path) do
+local keyTable = joypad.get(1)
+local times = v[2]
+while times > 0 do
+for i = 0, 9, 1 do
+if v[1] == "Up" then
+keyTable.up=true
+elseif v[1] == "Left" then
+keyTable.left=true
+elseif v[1] == "Right" then
+keyTable.right=true
+elseif v[1] == "Down" then
+keyTable.down=true
+end
+joypad.set(1,keyTable)
+emu.frameadvance()
+end
+for i = 0, 9, 1 do
+emu.frameadvance()
+end
+times = times - 1
+end
+end	
+end
 
 function rename_current()
 local info = get_map_info()
@@ -1236,6 +1273,7 @@ commands = {
 [{"K"}] = {read_current_item, true};
 [{"L"}] = {read_next_item, true};
 [{"P"}] = {pathfind, true};
+[{"W"}] = {pathfind_move, true};
 [{"P", "shift"}] = {set_pathfind_hm, true};
 [{"T"}] = {read_text, false};
 [{"R"}] = {read_tiles, true};
