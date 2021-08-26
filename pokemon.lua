@@ -547,7 +547,7 @@ local pressed_keys = {}
 kbd.xmouse = nil
 kbd.ymouse = nil
 for k, v in pairs(kbd) do
-if v then
+if k~="numlock" and v then
 table.insert(pressed_keys, k)
 end
 end
