@@ -1,10 +1,10 @@
-# Pokémon Access
+# PokÃ©mon Access
 # Version 2.3
 
 ## Introduction
 
-The Pokemon access project is an improved version of the Pokecrystal Access Project, a set of scripts which initially provided access to Pokémon Crystal for people using a screen reader.
-The goal of this project is to extend this functionality throughout all the Pokémon games. Current version has support for Pokémon Red, Blue, Yellow, Gold, Silver and Crystal, but in the future it will include, if it's possible, support for more games unified into this script.
+The Pokemon access project is an improved version of the Pokecrystal Access Project, a set of scripts which initially provided access to PokÃ©mon Crystal for people using a screen reader.
+The goal of this project is to extend this functionality throughout all the PokÃ©mon games. Current version has support for PokÃ©mon Red, Blue, Yellow, Gold, Silver and Crystal, but in the future it will include, if it's possible, support for more games unified into this script.
 
 At the momment, this readme will be essentially a copy of the readme provided with the Pokecrystal Access release, with only minnor  changes.
 
@@ -16,8 +16,8 @@ http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 
 2. Get a compatible rom. Currently, the script supports the following:
 
--Pokémon Red, Blue and Yellow: English, French, Spanish and Italian.
--Pokémon Gold, Silver and Crystal: English, Spanish and Italian.
+-PokÃ©mon Red, Blue and Yellow: English, French, Spanish and Italian.
+-PokÃ©mon Gold, Silver and Crystal: English, Spanish and Italian.
 
 3. After you have the desired rom, extract and run VBA.
 
@@ -34,8 +34,6 @@ Once the rom is loaded, load the lua script (tools, lua, New Lua script window).
 From there, load pokemon.lua, press run. It should say ready (or your language equivalent, bassed on the game you've downloaded), alt tab out and back in again
 
 ## Keys
-Make sure num lock is off while playing the game, or the keys won't work.
-
 * Standard gameBoy keys: z/x are a/b, enter/backspace start/select and arrows.
 * j, k and l - previous, current and next item
 * shift k - rename current item
@@ -73,7 +71,7 @@ Regarding "hacks.lua", keep in mind that...
       game = "crystal-clear", -- script folder of the hack (can be the same as base-game)
       language = "en" -- language folder of the hack
     }, -- end hackrom structure
--- paste here previous structure if you want to add more hacks of Pokémon Crystal
+-- paste here previous structure if you want to add more hacks of PokÃ©mon Crystal
   }, -- end base-game structure
   -- paste here previous structure if you want to add hacks of different games (gold, blue, yellow) changing the apropriate values
 }
