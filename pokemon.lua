@@ -707,6 +707,15 @@ end
 return false
 end
 
+function is_textbox()
+local textbox = get_textbox()
+if textbox ~= nil then
+return true
+else 
+return false
+end
+end
+
 function find_path_to(obj, speakPath)
 local path
 local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
@@ -757,7 +766,7 @@ end
 if speakPath then
 speak_path(clean_path(path))
 else 
-if screen.menu_position == nil then
+if screen.menu_position == nil and not is_textbox() then
 move_path(clean_path(path))
 end
 end
