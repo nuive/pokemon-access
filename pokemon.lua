@@ -757,7 +757,9 @@ end
 if speakPath then
 speak_path(clean_path(path))
 else 
+if screen.menu_position == nil then
 move_path(clean_path(path))
+end
 end
 end
 
