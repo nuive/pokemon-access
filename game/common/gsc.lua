@@ -116,7 +116,11 @@ end
 
 -- Returns true or false indicating whether we're on a map or not.
 function on_map()
-if get_map_id() == 0 or memory.readbyte(RAM_IN_BATTLE) ~= 0 or is_unown_puzzle() then
+if get_map_id() == 0 
+or memory.readbyte(RAM_IN_BATTLE) ~= 0 
+or is_unown_puzzle() 
+or is_textbox() 
+or screen.menu_position ~= nil then
 return false
 else
 return true

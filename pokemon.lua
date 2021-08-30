@@ -766,9 +766,7 @@ end
 if speakPath then
 speak_path(clean_path(path))
 else 
-if screen.menu_position == nil and not is_textbox() then
 move_path(clean_path(path))
-end
 end
 end
 
