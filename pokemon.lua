@@ -631,24 +631,24 @@ return path
 end
 
 function read_pathfind()
-local path = clean_path(pathfind())
+local path = pathfind()
 if path ~= nil then
-read_path(path)
+read_path(clean_path(path))
 end
 end
 
 function walk_pathfind()
-	local path = clean_path(pathfind())
+	local path = pathfind()
 	if path ~= nil then
-		walk_path(path)
+		walk_path(clean_path(path))
 		local new_path
 		for i = 1, 5, 1 do
-			new_path = clean_path(pathfind())
+			new_path = pathfind()
 			if new_path == nil then 
 				return
 			end
 			local last_movement = path[#path]
-			local new_movement = new_path[1]
+			local new_movement = clean_path(new_path)[1]
 			if new_movement == nil then 
 				return
 			end
@@ -661,7 +661,7 @@ function walk_pathfind()
 				end
 				return
 			else
-				walk_path(new_path)
+				walk_path(clean_path(new_path))
 			end
 		end
 	end
@@ -846,9 +846,6 @@ return path
 end
 
 function clean_path(path)
-if path == nil then 
-return nil 
-end
 local start = path[1]
 local new_path = {}
 for i, node in ipairs(path) do
