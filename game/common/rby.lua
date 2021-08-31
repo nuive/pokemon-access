@@ -1,3 +1,5 @@
+FRAMES_TURNAROUNT_WALK = 17
+FRAMES_WAIT_FOR_WALK_FINISH = 0
 SCROLL_INDICATOR_POSITION = 239
 HEALTH_BAR = "\x71\x62"
 HEALTH_BAR_LIMIT = 0x6c
@@ -76,7 +78,7 @@ local mapnumber = get_map_id()
 local textbox_top, textbox_bottom = get_textbox_border(5)
 if mapnumber == 0xff 
 or memory.readbyte(RAM_IN_BATTLE) ~= 0
-or is_textbox() 
+or is_textbox()
 or screen.menu_position ~= nil then
 return false
 elseif screen.tile_lines[6]:find(textbox_top) and screen.tile_lines[12]:find(textbox_bottom) then

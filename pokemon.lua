@@ -626,14 +626,45 @@ function pathfind()
 local info = get_map_info()
 reset_current_item_if_needed(info)
 local obj = info.objects[current_item]
-find_path_to(obj, true)
+local path = find_path_to(obj)
+return path
 end
 
-function pathfind_move()
-local info = get_map_info()
-reset_current_item_if_needed(info)
-local obj = info.objects[current_item]
-find_path_to(obj, false)
+function read_pathfind()
+local path = clean_path(pathfind())
+if path ~= nil then
+read_path(path)
+end
+end
+
+function walk_pathfind()
+	local path = clean_path(pathfind())
+	if path ~= nil then
+		walk_path(path)
+		local new_path
+		for i = 1, 5, 1 do
+			new_path = clean_path(pathfind())
+			if new_path == nil then 
+				return
+			end
+			local last_movement = path[#path]
+			local new_movement = new_path[1]
+			if new_movement == nil then 
+				return
+			end
+			if new_movement[1] == last_movement[1] and new_movement[2] == last_movement[2] then
+				local keyTable = joypad.get(1)
+				keyTable.A = true
+				for i = 0, 2, 1 do
+					joypad.set(1,keyTable)
+					emu.frameadvance()
+				end
+				return
+			else
+				walk_path(new_path)
+			end
+		end
+	end
 end
 
 function read_item(item)
@@ -716,7 +747,7 @@ return false
 end
 end
 
-function find_path_to(obj, speakPath)
+function find_path_to(obj)
 local path
 local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
 local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
@@ -763,11 +794,7 @@ if path == nil then
 tolk.output(message.translate("no_path"))
 return
 end
-if speakPath then
-speak_path(clean_path(path))
-else 
-move_path(clean_path(path))
-end
+return path
 end
 
 function has_talking_over_around(value, dir)
@@ -794,6 +821,9 @@ end
 end
 for i, warp in ipairs(get_warps()) do
 if warp.x ~= dest_x and warp.y ~= dest_y then
+if collisions[warp.y] == nil then 
+return 
+end
 collisions[warp.y][warp.x] = 0xff
 end
 end
@@ -816,6 +846,9 @@ return path
 end
 
 function clean_path(path)
+if path == nil then 
+return nil 
+end
 local start = path[1]
 local new_path = {}
 for i, node in ipairs(path) do
@@ -836,7 +869,7 @@ end -- for
 return group_unique_items(new_path)
 end
 
-function speak_path(path)
+function read_path(path)
 for _, v in ipairs(path) do
 local command = ""
 if v[2] > 0 then
@@ -847,30 +880,36 @@ tolk.output(command)
 end
 end -- function
 
-function move_path(path)
-for _, v in ipairs(path) do
-local keyTable = joypad.get(1)
-local times = v[2]
-while times > 0 do
-for i = 0, 9, 1 do
-if v[1] == "Up" then
-keyTable.up=true
-elseif v[1] == "Left" then
-keyTable.left=true
-elseif v[1] == "Right" then
-keyTable.right=true
-elseif v[1] == "Down" then
-keyTable.down=true
-end
-joypad.set(1,keyTable)
-emu.frameadvance()
-end
-for i = 0, 9, 1 do
-emu.frameadvance()
-end
-times = times - 1
-end
-end	
+function walk_path(path)
+	local last_v = {}
+	for _, v in ipairs(path) do
+		local keyTable = joypad.get(1)
+		local times = v[2]
+		screen = get_screen()
+		while times > 0 and on_map() do
+			if FRAMES_TURNAROUNT_WALK > 0 then
+				for i = 1, FRAMES_TURNAROUNT_WALK, 1 do
+					if v[1] == "Up" then
+						keyTable.up=true
+					elseif v[1] == "Left" then
+						keyTable.left=true
+					elseif v[1] == "Right" then
+						keyTable.right=true
+					elseif v[1] == "Down" then
+						keyTable.down=true
+					end
+					joypad.set(1, keyTable)
+					emu.frameadvance()
+				end
+			end
+			if FRAMES_WAIT_FOR_WALK_FINISH > 0 then
+				for i = 1, FRAMES_WAIT_FOR_WALK_FINISH, 1 do
+					emu.frameadvance()
+				end
+			end
+			times = times - 1
+		end	
+	end
 end
 
 function rename_current()
@@ -1281,8 +1320,8 @@ commands = {
 [{"J"}] = {read_previous_item, true};
 [{"K"}] = {read_current_item, true};
 [{"L"}] = {read_next_item, true};
-[{"P"}] = {pathfind, true};
-[{"W"}] = {pathfind_move, true};
+[{"P"}] = {read_pathfind, true};
+[{"W"}] = {walk_pathfind, true};
 [{"P", "shift"}] = {set_pathfind_hm, true};
 [{"T"}] = {read_text, false};
 [{"R"}] = {read_tiles, true};
