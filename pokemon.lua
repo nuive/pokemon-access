@@ -644,6 +644,10 @@ function walk_pathfind()
 		local new_path
 		local repeat_count = 3
 		for i = 1, repeat_count, 1 do
+			screen = get_screen()
+			if not on_map() then 
+				return
+			end
 			new_path = pathfind()
 			if new_path == nil then 
 				return
@@ -898,14 +902,15 @@ function walk_set_key(walk_direction)
 	local keyTable = joypad.get(1)
 	if FRAMES_TURN_WALK > 0 then 
 		for i = 1, FRAMES_TURN_WALK, 1 do
-			if walk_direction == "Up" then
+			if walk_direction == message.translate("up") then
 				keyTable.up=true
-			elseif walk_direction == "Left" then
+			elseif walk_direction == message.translate("left") then
 				keyTable.left=true
-			elseif walk_direction == "Right" then
+			elseif walk_direction == message.translate("right") then
 				keyTable.right=true
-			elseif walk_direction == "Down" then
+			elseif walk_direction == message.translate("down") then
 				keyTable.down=true
+			-- bush whirlpool waterfall enter_water exit_water
 			end
 			joypad.set(1, keyTable)
 			emu.frameadvance()
