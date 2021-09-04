@@ -1254,10 +1254,6 @@ end
 end
 end
 
-function walk_start()
-walk.walk_pathfind()
-end
-
 commands = {
 [{"Y"}] = {read_coords, true};
 [{"Y", "shift"}] = {read_camera, true};
