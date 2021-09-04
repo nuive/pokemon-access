@@ -1,6 +1,7 @@
 require "a-star"
 serpent = require "serpent"
 message = require "message"
+walk = require "walk"
 local inputbox = require "Inputbox"
 scriptpath = debug.getinfo(1, "S").source:sub(2):match("^.*\\")
 codemap = {
@@ -637,41 +638,6 @@ read_path(clean_path(path))
 end
 end
 
-function walk_pathfind()
-	local path = pathfind()
-	if path ~= nil and #path > 1 then
-		walk_path(clean_path(path))
-		local new_path
-		local repeat_count = 3
-		for i = 1, repeat_count, 1 do
-			screen = get_screen()
-			if not on_map() then 
-				return
-			end
-			new_path = pathfind()
-			if new_path == nil then 
-				return
-			end
-			local last_movement = path[#path]
-			local new_movement = clean_path(new_path)[1]
-			if new_movement == nil then 
-				return
-			end
-			if new_movement[1] == last_movement[1] and new_movement[2] == last_movement[2] then
-				local keyTable = joypad.get(1)
-				keyTable.A = true
-				for i = 0, 2, 1 do
-					joypad.set(1,keyTable)
-					emu.frameadvance()
-				end
-				return
-			else
-				walk_path(clean_path(new_path))
-			end
-		end
-	end
-end
-
 function read_item(item)
 local x, y = get_player_xy()
 local map_id = get_map_id()
@@ -862,13 +828,17 @@ if pathfind_hm then
 command, count = get_hm_command(node.type, last.type)
 end
 if command ~= "" then
-command = command .. " " .. message.translate("on_way") .. " "
+command = format_command_hm(command)
 end
 command = command .. only_direction(last.x, last.y, node.x, node.y)
 table.insert(new_path, {command=command, count=count})
 end -- i > 1
 end -- for
 return group_unique_items(new_path)
+end
+
+function format_command_hm(command)
+	return command .. " " .. message.translate("on_way") .. " "
 end
 
 function read_path(path)
@@ -881,47 +851,6 @@ command = command .. v[1]
 tolk.output(command)
 end
 end -- function
-
-function walk_path(path)
-	walk_set_key(path[1][1])
-	path = clean_path(pathfind())
-	if path == nil then 
-		return
-	end
-	for _, v in ipairs(path) do
-		local times = v[2]
-		screen = get_screen()
-		while times > 0 and on_map() do
-			walk_set_key(v[1])
-			times = times - 1
-		end	
-	end
-end
-
-function walk_set_key(walk_direction)
-	local keyTable = joypad.get(1)
-	if FRAMES_TURN_WALK > 0 then 
-		for i = 1, FRAMES_TURN_WALK, 1 do
-			if walk_direction == message.translate("up") then
-				keyTable.up=true
-			elseif walk_direction == message.translate("left") then
-				keyTable.left=true
-			elseif walk_direction == message.translate("right") then
-				keyTable.right=true
-			elseif walk_direction == message.translate("down") then
-				keyTable.down=true
-			-- bush whirlpool waterfall enter_water exit_water
-			end
-			joypad.set(1, keyTable)
-			emu.frameadvance()
-		end
-	end
-	if FRAMES_WALK_FINISH > 0 then
-		for i = 1, FRAMES_WALK_FINISH, 1 do
-			emu.frameadvance()
-		end
-	end		
-end
 
 function rename_current()
 local info = get_map_info()
@@ -1325,6 +1254,10 @@ end
 end
 end
 
+function walk_start()
+walk.walk_pathfind()
+end
+
 commands = {
 [{"Y"}] = {read_coords, true};
 [{"Y", "shift"}] = {read_camera, true};
@@ -1332,7 +1265,7 @@ commands = {
 [{"K"}] = {read_current_item, true};
 [{"L"}] = {read_next_item, true};
 [{"P"}] = {read_pathfind, true};
-[{"W"}] = {walk_pathfind, true};
+[{"W"}] = {walk.pathfind, true};
 [{"P", "shift"}] = {set_pathfind_hm, true};
 [{"T"}] = {read_text, false};
 [{"R"}] = {read_tiles, true};
