@@ -1,57 +1,61 @@
 function walk_pathfind()
-	local path = pathfind()
-	if path ~= nil and #path > 1 then
-		path = clean_path(path)
-		if walk_path(path) == false then 
+	local old_path = {}
+	local repeat_count = 4
+	local starting_map_id = get_map_id()
+	for i = 1, repeat_count, 1 do
+		screen = get_screen()
+		if not on_map() or starting_map_id ~= get_map_id() then 
 			return
 		end
-		local new_path
-		local repeat_count = 3
-		local old_path = path
-		for i = 1, repeat_count, 1 do
-			screen = get_screen()
-			if not on_map() then 
-				return
-			end
-			new_path = pathfind()
-			if new_path == nil then 
-				return
-			end
-			new_path = clean_path(new_path)
-			local last_movement = old_path[#old_path]
-			local new_movement = new_path[1]
-			if new_movement == nil then 
-				return
-			end
-			if new_movement[1] == last_movement[1] and new_movement[2] == last_movement[2] then
-				set_key("A", 2)
-				return
-			else
-				old_path = new_path
-				if walk_path(new_path) == false then 
-					set_key("A", 2)
-					return
-				end
-			end
+		local path = pathfind()
+		if path == nil or #path <= 1 then
+			return
 		end
+		path = clean_path(path)
+		local old_player_x, old_player_y = get_player_xy()
+		local walk_complete = walk_path(path) 
+		local current_player_x, current_player_y = get_player_xy()
+		local same_player_xy = (old_player_x == current_player_x and old_player_y == current_player_y)
+		local same_movement = is_movement_repeated(old_path, path)
+		local walk_complete = walk_complete or (same_player_xy and same_movement) 
+		if walk_complete then
+			set_key("A", 2)
+			return
+		end
+		old_path = path
 	end
 end
 
+function is_movement_repeated(old_path, path)
+	if #old_path < 1 then
+		return false
+	end
+	local last_movement = old_path[#old_path]
+	local new_movement = path[1]
+	if new_movement == nil then 
+		return true
+	end
+	return new_movement[1] == last_movement[1] 
+		and new_movement[2] == last_movement[2]
+		and #path == #old_path
+end
+	
 function walk_path(path)
 	if command_requires_hm(path[1][1]) then 
-		return false
+		return true
 	end 
 	if TURNING_REQUIRES_EXTRA_ACTION then
 		walk_set_key(path[1][1])
 		path = pathfind()
 		if path == nil then 
-			return false
+			return true
 		end
 		path = clean_path(path)
 	end
 	for _, v in ipairs(path) do
+		local old_player_x, old_player_y = get_player_xy()
 		if command_requires_hm(v[1]) then 
-			return false
+			return true
 		end
 		local times = v[2]
 		screen = get_screen()
@@ -59,8 +63,13 @@ function walk_path(path)
 			walk_set_key(v[1])
 			times = times - 1
 		end	
+		local current_player_x, current_player_y = get_player_xy()
+		local same_player_xy = (old_player_x == current_player_x and old_player_y == current_player_y)
+		if same_player_xy then
+			break
+		end
 	end
-	return true
+	return false
 end
 
 function command_requires_hm(command)
@@ -99,7 +108,6 @@ function command_walk_direction(command, command_name)
 	local command_up_to_direction = format_command_hm(command_name) .. " "
 	local walk_direction = string.sub(command, #command_up_to_direction, #command)
 	walk_set_key(walk_direction)	
-	walk_set_key(walk_direction)
 end
 
 function set_key(key, frames)
@@ -127,7 +135,7 @@ function walk_set_key(walk_direction)
 		for i = 1, FRAMES_WALK_FINISH, 1 do
 			emu.frameadvance()
 		end
-	end		
+	end	
 end
 
 return {
