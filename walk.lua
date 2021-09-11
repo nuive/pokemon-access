@@ -109,7 +109,7 @@ function command_requires_hm(command)
 end
 
 function hm_walk_direction(command, command_name)
-	local command_up_to_direction = format_command_hm(command_name) .. " "
+	local command_up_to_direction = format_hm_command(command_name) .. " "
 	local direction = string.sub(command, #command_up_to_direction, #command)
 	walk_direction(direction)	
 end
