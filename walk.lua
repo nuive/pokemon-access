@@ -3,11 +3,10 @@ function walk_pathfind()
 	local repeat_count = 4
 	local starting_map_id = get_map_id()
 	for i = 1, repeat_count, 1 do
-		screen = get_screen()
-		if not on_map() or starting_map_id ~= get_map_id() then 
+		if starting_map_id ~= get_map_id() then 
 			return
 		end
-		local path = pathfind()
+		local path = get_path()
 		if path == nil or #path <= 1 then
 			return
 		end
@@ -43,7 +42,7 @@ end
 function walk_path(path)
 	if TURNING_REQUIRES_EXTRA_ACTION then
 		walk_direction(path[1][1])
-		path = pathfind()
+		path = get_path()
 		if path == nil then 
 			return true
 		end
@@ -67,6 +66,14 @@ function walk_path(path)
 		end
 	end
 	return false
+end
+
+function get_path()
+	screen = get_screen()
+	if not on_map() then 
+		return
+	end
+	return pathfind()
 end
 
 function command_requires_hm(command)
