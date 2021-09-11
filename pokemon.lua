@@ -828,7 +828,7 @@ if pathfind_hm then
 command, count = get_hm_command(node.type, last.type)
 end
 if command ~= "" then
-command = format_command_hm(command)
+command = format_hm_command(command)
 end
 command = command .. only_direction(last.x, last.y, node.x, node.y)
 table.insert(new_path, {command=command, count=count})
@@ -837,7 +837,7 @@ end -- for
 return group_unique_items(new_path)
 end
 
-function format_command_hm(command)
+function format_hm_command(command)
 	return command .. " " .. message.translate("on_way") .. " "
 end
 
