@@ -41,9 +41,6 @@ function is_movement_repeated(old_path, path)
 end
 	
 function walk_path(path)
-	if command_requires_hm(path[1][1]) then 
-		return true
-	end 
 	if TURNING_REQUIRES_EXTRA_ACTION then
 		walk_set_key(path[1][1])
 		path = pathfind()
