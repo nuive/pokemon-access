@@ -1,6 +1,5 @@
-FRAMES_TURN_WALK = 4
+FRAMES_PRESS_WALK = 4
 FRAMES_WALK_FINISH = 12
-TURNING_REQUIRES_EXTRA_ACTION = true
 SCROLL_INDICATOR_POSITION = 359
 HEALTH_BAR = "\x60\x61"
 HEALTH_BAR_LIMIT = 0x6b
@@ -29,13 +28,13 @@ end
 return name
 end
 
-function get_inpassible_tiles()
+function get_impassable_tiles()
 local ptr = ROM_TILE_FLAGS
 for i=0x00, 0xff do
 if memory.gbromreadbyte(ptr + i ) % 0x10 ~= 0 then
-inpassible_tiles[i] = true
+impassable_tiles[i] = true
 else
-inpassible_tiles[i] = false
+impassable_tiles[i] = false
 end
 end
 end
@@ -96,11 +95,11 @@ end
 return command, count
 end
 
-function update_inpassible_tiles()
+function update_impassable_tiles()
 local ptr = ROM_TILE_FLAGS
 for i=0x00, 0xff do
 if is_cut_tile(i) or is_water_tile(i) then
-inpassible_tiles[i] = not pathfind_hm
+impassable_tiles[i] = not pathfind_hm
 end
 end
 end
@@ -303,7 +302,7 @@ return collisions
 end
 
 function is_collision(collisions, y, x)
-return inpassible_tiles[collisions[y][x]]
+return impassable_tiles[collisions[y][x]]
 end
 
 function get_special_tiles_around(collisions, y, x)
@@ -400,7 +399,7 @@ elseif astar.dist_between(node, neighbor) ~= 1 then
 return false
 elseif astar.dist_between(node, neighbor) == 1 and neighbor.is_dest then
 return true
-elseif inpassible_tiles[neighbor.type] then
+elseif impassable_tiles[neighbor.type] then
 return false
 end
 return true
@@ -557,5 +556,5 @@ end)
 commands[{"D", "shift"}] = {read_holding_piece, false}
 
 -- initialize tables based in rom values
-get_inpassible_tiles()
+get_impassable_tiles()
 

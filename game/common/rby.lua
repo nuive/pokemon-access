@@ -1,5 +1,5 @@
-FRAMES_TURN_WALK = 4
-FRAMES_WALK_FINISH = 14
+FRAMES_PRESS_WALK = 4
+FRAMES_WALK_FINISH = 15
 SCROLL_INDICATOR_POSITION = 239
 HEALTH_BAR = "\x71\x62"
 HEALTH_BAR_LIMIT = 0x6c
@@ -40,19 +40,19 @@ end
 return name
 end
 
-function update_inpassible_tiles()
+function update_impassable_tiles()
 for i=0x00, 0xff do
 if is_cut_tile(i) then
-inpassible_tiles[i] = not pathfind_hm
+impassable_tiles[i] = not pathfind_hm
 elseif is_water_tile(i) then
-inpassible_tiles[i] = not pathfind_hm
+impassable_tiles[i] = not pathfind_hm
 else
-inpassible_tiles[i] = true
+impassable_tiles[i] = true
 end
 end
 	local ptr = memory.readword(RAM_PASSIBLE_TILES)
 while memory.gbromreadbyte(ptr) ~= 0xff do
-inpassible_tiles[memory.gbromreadbyte(ptr)] = false
+impassable_tiles[memory.gbromreadbyte(ptr)] = false
 ptr = ptr + 1
 end
 end
@@ -276,7 +276,7 @@ add_collision(x*2+1, y*2+1, memory.gbromreadbyte(ptr+(4*3)+2))
 end -- x
 end -- y
 
-update_inpassible_tiles()
+update_impassable_tiles()
 return collisions
 end
 
@@ -311,7 +311,7 @@ memory.gbromreadbyte(ptr+(tile_y*8)+(tile_x*2)+5)
 end
 
 function is_collision(collisions, y, x)
-return inpassible_tiles[collisions[y][x]]
+return impassable_tiles[collisions[y][x]]
 or check_collision_pair(memory.readbyte(RAM_MAP_HEADER), last_camera_tile, collisions[y][x])
 end
 
@@ -430,7 +430,7 @@ elseif astar.dist_between(node, neighbor) ~= 1 then
 return false
 elseif astar.dist_between(node, neighbor) == 1 and neighbor.is_dest then
 return true
-elseif inpassible_tiles[neighbor.type] then
+elseif impassable_tiles[neighbor.type] then
 return false
 end
 return true

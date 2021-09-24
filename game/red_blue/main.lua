@@ -1,4 +1,3 @@
-TURNING_REQUIRES_EXTRA_ACTION = false
 BOULDER_SPRITE = 0x3f
 
 function is_water_tile(tile)

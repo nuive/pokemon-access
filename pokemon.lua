@@ -49,7 +49,7 @@ camera_x = -7
 camera_y = -7
 last_camera_tile = 0xff
 pathfind_hm = false
-inpassible_tiles = {}
+impassable_tiles = {}
 
 function load_game()
 if language == nil then
@@ -615,7 +615,7 @@ end
 
 function set_pathfind_hm()
 	pathfind_hm = not pathfind_hm
-update_inpassible_tiles()
+update_impassable_tiles()
 	if pathfind_hm then
 		tolk.output(message.translate("use_hm"))
 	else
@@ -703,7 +703,7 @@ end
 
 function is_posible_connection(collisions, x, y, dir)
 local dir_x, dir_y = decode_direction(dir)
-if not inpassible_tiles[collisions[y + dir_y][x + dir_x]] then
+if not impassable_tiles[collisions[y + dir_y][x + dir_x]] then
 return true
 end
 return false
@@ -742,7 +742,7 @@ end
 local found = false
 for dest_y = results.start_y, results.end_y do
 for dest_x = results.start_x, results.end_x do
-if not inpassible_tiles[collisions[dest_y][dest_x]] and is_posible_connection(collisions, dest_x, dest_y, dir) then
+if not impassable_tiles[collisions[dest_y][dest_x]] and is_posible_connection(collisions, dest_x, dest_y, dir) then
 if not found then
 path = find_path_to_xy(dest_x, dest_y)
 end
@@ -783,7 +783,7 @@ local height = #collisions - 6
 local width = #collisions[0] - 6
 local start = nil
 local dest = nil
--- set all objects to inpassible tiles
+-- set all objects to impassable tiles
 -- 0xff is the tile list delimiter, so it won't ever be a passible tile
 for i, object in ipairs(get_objects()) do
 if not object.ignorable then
@@ -1261,7 +1261,8 @@ commands = {
 [{"K"}] = {read_current_item, true};
 [{"L"}] = {read_next_item, true};
 [{"P"}] = {read_pathfind, true};
-[{"W"}] = {walk.pathfind, true};
+[{"I"}] = {walk.item, true};
+[{"W"}] = {walk.camera, true};
 [{"P", "shift"}] = {set_pathfind_hm, true};
 [{"T"}] = {read_text, false};
 [{"R"}] = {read_tiles, true};
