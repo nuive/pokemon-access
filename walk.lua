@@ -16,13 +16,12 @@ function walk_to_camera()
 	full_walk(camera_xy)
 end
 
-function full_walk(camera_xy)
+function walk(camera_xy)
 	local old_path = {}
 	local starting_map_id = get_map_id()
 	local new_path
 	local path
 	for i = 1, walk_attempts, 1 do
-		vba.print(i)
 		if starting_map_id ~= get_map_id() then 
 			tolk.output(message.translate("end"))
 			return
