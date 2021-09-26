@@ -1,3 +1,5 @@
+walk_attempts = 6
+
 function walk_to_item()
 	full_walk()
 end
@@ -16,11 +18,11 @@ end
 
 function full_walk(camera_xy)
 	local old_path = {}
-	local repeat_count = 4
 	local starting_map_id = get_map_id()
 	local new_path
 	local path
-	for i = 1, repeat_count, 1 do
+	for i = 1, walk_attempts, 1 do
+		vba.print(i)
 		if starting_map_id ~= get_map_id() then 
 			tolk.output(message.translate("end"))
 			return
