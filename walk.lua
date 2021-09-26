@@ -1,7 +1,7 @@
 walk_attempts = 6
 
 function walk_to_item()
-	walk()
+	full_walk()
 end
 
 function walk_to_camera()
@@ -11,12 +11,12 @@ function walk_to_camera()
 	if x < 0 or y < 0 
 	or x >= memory.readbyte(RAM_MAP_WIDTH)*2 or y >= memory.readbyte(RAM_MAP_HEIGHT)*2 then
 		tolk.output(message.translate("not_map"))
-		return
+		return""
 	end
-	walk(camera_xy)
+	full_walk(camera_xy)
 end
 
-function walk(camera_xy)
+function full_walk(camera_xy)
 	local old_path = {}
 	local starting_map_id = get_map_id()
 	local new_path
