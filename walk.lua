@@ -59,6 +59,9 @@ function facing_destination(path, new_path)
 		return false
 	end
 	local last_movement = path[#path]
+	if new_path == nil then
+		return false
+	end
 	local new_movement = new_path[1]
 	if new_movement == nil then 
 		return true
