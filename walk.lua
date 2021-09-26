@@ -1,7 +1,7 @@
 walk_attempts = 6
 
 function walk_to_item()
-	full_walk()
+	walk()
 end
 
 function walk_to_camera()
@@ -13,7 +13,7 @@ function walk_to_camera()
 		tolk.output(message.translate("not_map"))
 		return
 	end
-	full_walk(camera_xy)
+	walk(camera_xy)
 end
 
 function walk(camera_xy)
