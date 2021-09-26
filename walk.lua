@@ -11,7 +11,7 @@ function walk_to_camera()
 	if x < 0 or y < 0 
 	or x >= memory.readbyte(RAM_MAP_WIDTH)*2 or y >= memory.readbyte(RAM_MAP_HEIGHT)*2 then
 		tolk.output(message.translate("not_map"))
-		return""
+		return
 	end
 	walk_repeating(camera_xy)
 end
