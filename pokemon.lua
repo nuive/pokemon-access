@@ -709,63 +709,53 @@ end
 return false
 end
 
-function is_textbox()
-local textbox = get_textbox()
-if textbox ~= nil then
-return true
-else 
-return false
-end
-end
-
 function find_path_to(obj)
-local path
-local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
-local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
-
-if obj.type == "connection" then
-local collisions = get_map_collisions()
-local results = {}
-if obj.direction == "north" then
-results = get_connection_limits(memory.readword(RAM_MAP_NORTH_CONNECTION_START_POINTER), memory.readword(RAM_MAP_NORTH_CONNECTION_SIZE), NORTH)
-dir = UP
-elseif obj.direction == "south" then
-results = get_connection_limits(memory.readword(RAM_MAP_SOUTH_CONNECTION_START_POINTER), memory.readword(RAM_MAP_SOUTH_CONNECTION_SIZE), SOUTH)
-dir = DOWN
-elseif obj.direction == "east" then
-results = get_connection_limits(memory.readword(RAM_MAP_EAST_CONNECTION_START_POINTER), memory.readword(RAM_MAP_EAST_CONNECTION_SIZE), EAST)
-dir = RIGHT
-elseif obj.direction == "west" then
-results = get_connection_limits(memory.readword(RAM_MAP_WEST_CONNECTION_START_POINTER), memory.readword(RAM_MAP_WEST_CONNECTION_SIZE), WEST)
-dir = LEFT
-end
-local found = false
-for dest_y = results.start_y, results.end_y do
-for dest_x = results.start_x, results.end_x do
-if not impassable_tiles[collisions[dest_y][dest_x]] and is_posible_connection(collisions, dest_x, dest_y, dir) then
-if not found then
-path = find_path_to_xy(dest_x, dest_y)
-end
-found = true
-else
-found = false
-end
-if path ~= nil then
-break
-end
-end
-if path ~= nil then
-break
-end
-end
-else
-path = find_path_to_xy(obj.x, obj.y, true)
-end
-if path == nil then
-tolk.output(message.translate("no_path"))
-return
-end
-return path
+	local path
+	local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
+	local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
+	if obj.type == "connection" then
+		local collisions = get_map_collisions()
+		local results = {}
+		if obj.direction == "north" then
+			results = get_connection_limits(memory.readword(RAM_MAP_NORTH_CONNECTION_START_POINTER), memory.readword(RAM_MAP_NORTH_CONNECTION_SIZE), NORTH)
+			dir = UP
+		elseif obj.direction == "south" then
+			results = get_connection_limits(memory.readword(RAM_MAP_SOUTH_CONNECTION_START_POINTER), memory.readword(RAM_MAP_SOUTH_CONNECTION_SIZE), SOUTH)
+			dir = DOWN
+		elseif obj.direction == "east" then
+			results = get_connection_limits(memory.readword(RAM_MAP_EAST_CONNECTION_START_POINTER), memory.readword(RAM_MAP_EAST_CONNECTION_SIZE), EAST)
+			dir = RIGHT
+		elseif obj.direction == "west" then
+			results = get_connection_limits(memory.readword(RAM_MAP_WEST_CONNECTION_START_POINTER), memory.readword(RAM_MAP_WEST_CONNECTION_SIZE), WEST)
+			dir = LEFT
+		end
+		local found = false
+		for dest_y = results.start_y, results.end_y do
+			for dest_x = results.start_x, results.end_x do
+				if not impassable_tiles[collisions[dest_y][dest_x]] and is_posible_connection(collisions, dest_x, dest_y, dir) then
+					if not found then
+						path = find_path_to_xy(dest_x, dest_y)
+					end
+					found = true
+				else
+					found = false
+				end
+				if path ~= nil then
+					break
+				end
+			end
+			if path ~= nil then
+				break
+			end
+		end
+	else
+		path = find_path_to_xy(obj.x, obj.y, true)
+	end
+	if path == nil then
+		tolk.output(message.translate("no_path"))
+		return
+	end
+	return path
 end
 
 function has_talking_over_around(value, dir)
@@ -776,44 +766,44 @@ return false
 end
 
 function find_path_to_xy(dest_x, dest_y, search)
-local player_x, player_y = get_player_xy()
-local collisions = get_map_collisions()
-local allnodes = {}
-local height = #collisions - 6
-local width = #collisions[0] - 6
-local start = nil
-local dest = nil
--- set all objects to impassable tiles
--- 0xff is the tile list delimiter, so it won't ever be a passible tile
-for i, object in ipairs(get_objects()) do
-if not object.ignorable then
-collisions[object.y][object.x] = 0xff
-end
-end
-for i, warp in ipairs(get_warps()) do
-if warp.x ~= dest_x and warp.y ~= dest_y then
-if collisions[warp.y] == nil then 
-return 
-end
-collisions[warp.y][warp.x] = 0xff
-end
-end
--- generate the all nodes list for pathfinding, and track the start and end nodes
-for y = 0, height do
-for x = 0, width do
-local n = {x=x, y=y, type=collisions[y][x], special_tiles=get_special_tiles_around(collisions, y, x), is_dest = false}
-if x == player_x and y == player_y then
-start = n
-end
-if x == dest_x and y == dest_y then
-n.is_dest = true
-dest = n
-end
-table.insert(allnodes, n)
-end -- x
-end -- y
-path = astar.path(start, dest, allnodes, true, valid_path)
-return path
+	local player_x, player_y = get_player_xy()
+	local collisions = get_map_collisions()
+	local allnodes = {}
+	local height = #collisions - 6
+	local width = #collisions[0] - 6
+	local start = nil
+	local dest = nil
+	-- set all objects to impassable tiles
+	-- 0xff is the tile list delimiter, so it won't ever be a passable tile
+	for i, object in ipairs(get_objects()) do
+		if not object.ignorable then
+			collisions[object.y][object.x] = 0xff
+		end
+	end
+	for i, warp in ipairs(get_warps()) do
+		if warp.x ~= dest_x and warp.y ~= dest_y then
+			if collisions[warp.y] == nil then 
+				return 
+			end
+			collisions[warp.y][warp.x] = 0xff
+		end
+	end
+	-- generate the all nodes list for pathfinding, and track the start and end nodes
+	for y = 0, height do
+		for x = 0, width do
+			local n = {x=x, y=y, type=collisions[y][x], special_tiles=get_special_tiles_around(collisions, y, x), is_dest = false}
+			if x == player_x and y == player_y then
+				start = n
+			end
+			if x == dest_x and y == dest_y then
+				n.is_dest = true
+				dest = n
+			end
+			table.insert(allnodes, n)
+		end -- x
+	end -- y
+	path = astar.path(start, dest, allnodes, true, valid_path)
+	return path
 end
 
 function clean_path(path)

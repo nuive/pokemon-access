@@ -120,9 +120,13 @@ end
 function on_map()
 if get_map_id() == 0 
 or memory.readbyte(RAM_IN_BATTLE) ~= 0 
-or is_unown_puzzle() 
-or is_textbox() 
-or screen.menu_position ~= nil then
+or is_unown_puzzle()
+or get_textbox_line() ~= nil 
+or screen.menu_position ~= nil 
+-- RAM_TEXT returns upper left corner value
+-- 127 appears to be a blank tile/square, which is displayed in some menus, screen transitions and title screen
+-- here to determine screen transitions
+or memory.readbyte(RAM_TEXT) == 127 then
 return false
 else
 return true

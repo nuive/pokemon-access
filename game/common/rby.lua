@@ -50,7 +50,7 @@ else
 impassable_tiles[i] = true
 end
 end
-	local ptr = memory.readword(RAM_PASSIBLE_TILES)
+	local ptr = memory.readword(RAM_PASSABLE_TILES)
 while memory.gbromreadbyte(ptr) ~= 0xff do
 impassable_tiles[memory.gbromreadbyte(ptr)] = false
 ptr = ptr + 1
@@ -58,7 +58,7 @@ end
 end
 
 function check_talking_over(tile)
-ptr = RAM_PASSIBLE_TILES+2
+ptr = RAM_PASSABLE_TILES+2
 while ptr < RAM_GRASS_TILE and memory.readbyte(ptr) ~= 0xff do
 if tile == memory.readbyte(ptr) then
 return true
@@ -78,7 +78,7 @@ local mapnumber = get_map_id()
 local textbox_top, textbox_bottom = get_textbox_border(5)
 if mapnumber == 0xff 
 or memory.readbyte(RAM_IN_BATTLE) ~= 0
-or is_textbox()
+or get_textbox_line()
 or screen.menu_position ~= nil then
 return false
 elseif screen.tile_lines[6]:find(textbox_top) and screen.tile_lines[12]:find(textbox_bottom) then
