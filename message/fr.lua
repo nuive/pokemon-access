@@ -36,4 +36,9 @@ strings = {
 ["statue"] = "Statue",
 ["cliff"] = "Falaise",
 ["quiz"] = "Quiz",
+["standing_on_destination"] = "Standing on destination",
+["camera_on_player"] = "Camera on player",
+["walk_end"] = "Walk end",
+["on_way_to"] = "On way to",
+["camera"] = "Camera",
 }

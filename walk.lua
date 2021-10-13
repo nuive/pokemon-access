@@ -10,7 +10,7 @@ function walk_to_item()
 	end
 	-- standing on destination
 	if #path < 1 then
-		tolk.output(message.translate("end"))
+		tolk.output(message.translate("standing_on_destination"))
 		return
 	end
 	walk_path(path)
@@ -27,7 +27,7 @@ function walk_to_camera()
 		return
 	end
 	if standing_at_desination() then
-		tolk.output(message.translate("end"))
+		tolk.output(message.translate("camera_on_player"))
 		return
 	end
 	local path = get_path()
@@ -72,7 +72,8 @@ function walk_path(new_path)
 			end
 		end
 	end -- for
-	tolk.output(message.translate("end"))
+	tolk.silence()
+	tolk.output(message.translate("walk_end"))
 end -- function
 
 -- Checks if destination was reached. 
@@ -125,15 +126,16 @@ function standing_at_desination()
 end -- function
 
 function read_on_way()
+	local destination_name
 	if walking_to_item then
 		local info = get_map_info()
 		reset_current_item_if_needed(info)
 		local map_id = get_map_id()
-		local name = get_name(mapid, info.objects[current_item])
-		tolk.output(message.translate("on_way") .. name)
+		destination_name = get_name(mapid, info.objects[current_item])
 	else
-		tolk.output(message.translate("on_way"))
+		destination_name = message.translate("camera") 
 	end
+	tolk.output(message.translate("on_way_to") .. " " .. destination_name)
 end -- function
 
 -- Returns path in directional movement form as obtained from clean_path
@@ -256,7 +258,7 @@ function set_key(key, frames)
 			keys.A = true
 		end -- if
 		screen = get_screen()
-		if not on_map() or joypad_key_pressed() then
+		if on_map() == false or joypad_key_pressed() then
 			return
 		end
 		joypad.set(1, keys)
