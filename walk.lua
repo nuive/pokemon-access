@@ -8,7 +8,6 @@ function walk_to_item()
 	if path == nil then 
 		return
 	end
-	-- standing on destination
 	if #path < 1 then
 		tolk.output(message.translate("standing_on_destination"))
 		return
@@ -35,7 +34,7 @@ function walk_to_camera()
 		return
 	end
 	walk_path(path)
-end
+end -- function
 
 -- Returns true or false indicating whether reached walking end
 function walk_path(new_path)
@@ -87,7 +86,6 @@ function reached_destination(path, new_path, was_facing)
 		return true
 	end
 	if facing_destination(path, new_path) and was_facing then
-		-- used to not stop, in case it's possible to arrive on destination
 		if walking_to_item then
 			local destination_x, destination_y = get_destination_xy()
 			set_key("A", 2)
@@ -99,7 +97,7 @@ function reached_destination(path, new_path, was_facing)
 			end -- destination
 		else 
 			return true
-		end -- on_way_to_item
+		end -- walking_to_item
 	end -- facing_destination
 end -- function
 
@@ -238,7 +236,6 @@ end -- function
 
 -- Gets direction from hm command and walks in it
 function walk_hm(hm_command, command)
-	vba.print(command)
 	local direction = get_hm_direction(hm_command, command)
 	walk_direction(direction)
 	walk_wait(FRAMES_WALK_FINISH)
@@ -288,7 +285,7 @@ function walk_wait(frames)
 		end
 		emu.frameadvance()
 	end -- for
-end
+end -- function
 
 -- returns true, if A, B, L, R, start, select or a directional button is pressed
 function joypad_key_pressed()
@@ -298,7 +295,7 @@ function joypad_key_pressed()
 	else
 		return true
 	end
-end
+end -- function
 
 return {
 item = walk_to_item,
