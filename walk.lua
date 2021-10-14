@@ -54,12 +54,15 @@ function walk_path(new_path)
 		-- tries to execute hm command incase standing next to an hm tile
 		local impassable = execute_hm_command(path[1][1])
 		if impassable then
-			break
+			return
 		end
 		walk_direction(path[1][1])
-		-- sometimes new map loads sooner than it's possible to check if arrived at destination
+		if joypad_key_pressed() then
+			break
+		end
+		-- sometimes new map loads sooner, than the check for determining arrival to destination
 		-- so checking if entered a new map
-		if starting_map_id ~= get_map_id() or joypad_key_pressed() then
+		if starting_map_id ~= get_map_id() then
 			break
 		end
 		new_path = get_path()
@@ -213,6 +216,8 @@ function execute_hm_command(hm_command)
 		return true
 	elseif string.sub(hm_command, 1, #message_waterfall) == message_waterfall then 
 		if get_hm_direction(hm_command, message_waterfall) == message.translate("down") then
+			-- double walk so player can turn and go down the waterfall
+			walk_hm(hm_command, message_waterfall)
 			walk_hm(hm_command, message_waterfall)
 		end
 		tolk.silence()
@@ -233,6 +238,7 @@ end -- function
 
 -- Gets direction from hm command and walks in it
 function walk_hm(hm_command, command)
+	vba.print(command)
 	local direction = get_hm_direction(hm_command, command)
 	walk_direction(direction)
 	walk_wait(FRAMES_WALK_FINISH)
