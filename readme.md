@@ -1,10 +1,10 @@
-# PokÃ©mon Access
+# Pokémon Access
 # Version 2.3
 
 ## Introduction
 
-The Pokemon access project is an improved version of the Pokecrystal Access Project, a set of scripts which initially provided access to PokÃ©mon Crystal for people using a screen reader.
-The goal of this project is to extend this functionality throughout all the PokÃ©mon games. Current version has support for PokÃ©mon Red, Blue, Yellow, Gold, Silver and Crystal, but in the future it will include, if it's possible, support for more games unified into this script.
+The Pokemon access project is an improved version of the Pokecrystal Access Project, a set of scripts which initially provided access to Pokémon Crystal for people using a screen reader.
+The goal of this project is to extend this functionality throughout all the Pokémon games. Current version has support for Pokémon Red, Blue, Yellow, Gold, Silver and Crystal, but in the future it will include, if it's possible, support for more games unified into this script.
 
 At the momment, this readme will be essentially a copy of the readme provided with the Pokecrystal Access release, with only minnor  changes.
 
@@ -16,8 +16,8 @@ http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 
 2. Get a compatible rom. Currently, the script supports the following:
 
--PokÃ©mon Red, Blue and Yellow: English, French, Spanish and Italian.
--PokÃ©mon Gold, Silver and Crystal: English, Spanish and Italian.
+-Pokémon Red, Blue and Yellow: English, French, Spanish and Italian.
+-Pokémon Gold, Silver and Crystal: English, Spanish and Italian.
 
 3. After you have the desired rom, extract and run VBA.
 
@@ -35,16 +35,19 @@ From there, load pokemon.lua, press run. It should say ready (or your language e
 
 ## Keys
 * Standard gameBoy keys: z/x are a/b, enter/backspace start/select and arrows.
-* j, k and l - previous, current and next item
-* shift k - rename current item
 * m - read current map name
 * shift M - rename current map
 * t - read text on screen, if any
-* p - pathfind. This tries to find a path between you and the object selected.
-* Shift + P - Toggle HM compatibility when using pathfind. For example surf or cut
 * y - read current position
 * h - read enemy health if in a battle
 * r - read the surrounding tiles (for debugging purposes)
+
+### Item/Object
+* j, k and l - previous, current and next item
+* shift k - rename current item
+* p - pathfind. This tries to find a path between you and the object selected.
+* Shift + P - Toggle HM compatibility when using pathfind. For example surf or cut
+* i - walk to selected item. This tries to walk to the selected object.
 
 ### Camera
 * s - move the camera left, stopping at walls
@@ -54,6 +57,7 @@ From there, load pokemon.lua, press run. It should say ready (or your language e
 * d - move the camera to the player's position
 * add shift to s/f/e/c to move the camera, ignoring walls
 * Shift + y - read current camera position
+* w - walk to camera. This tries to walk to camera's position.
 
 ### Gold/SILVER/Crystal exclusive keys
 * shift+d - say which piece you are holding (on the unown puzzles)
@@ -71,7 +75,7 @@ Regarding "hacks.lua", keep in mind that...
       game = "crystal-clear", -- script folder of the hack (can be the same as base-game)
       language = "en" -- language folder of the hack
     }, -- end hackrom structure
--- paste here previous structure if you want to add more hacks of PokÃ©mon Crystal
+-- paste here previous structure if you want to add more hacks of Pokémon Crystal
   }, -- end base-game structure
   -- paste here previous structure if you want to add hacks of different games (gold, blue, yellow) changing the apropriate values
 }

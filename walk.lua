@@ -172,6 +172,7 @@ end -- function
 
 function get_destination_xy()
 	if on_map() then
+		local destination_x, destination_y
 		if walking_to_item then
 			local info = get_map_info()
 			reset_current_item_if_needed(info)
