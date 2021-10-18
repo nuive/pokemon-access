@@ -205,11 +205,13 @@ function execute_hm_command(hm_command)
 	--	then compares the result to the message itself
 	if string.sub(hm_command, 1, #message_bush) == message_bush then 
 		walk_hm(hm_command, message_bush)
+		set_key("A", 2)
 		tolk.silence()
 		tolk.output(hm_command)
 		return true
 	elseif string.sub(hm_command, 1, #message_whirlpool) == message_whirlpool then
 		walk_hm(hm_command, message_whirlpool)
+		set_key("A", 2)
 		tolk.silence()
 		tolk.output(hm_command)
 		return true
@@ -224,6 +226,7 @@ function execute_hm_command(hm_command)
 		return true
 	elseif string.sub(hm_command, 1, #message_enter_water) == message_enter_water then
 		walk_hm(hm_command, message_enter_water)
+		set_key("A", 2)
 		tolk.silence()
 		tolk.output(hm_command)
 		return true
