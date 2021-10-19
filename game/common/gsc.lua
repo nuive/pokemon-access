@@ -1,5 +1,6 @@
 FRAMES_PRESS_WALK = 4
 FRAMES_WALK_FINISH = 12
+FRAMES_BIKE_FINISH = 4
 SCROLL_INDICATOR_POSITION = 359
 HEALTH_BAR = "\x60\x61"
 HEALTH_BAR_LIMIT = 0x6b
@@ -524,6 +525,20 @@ else
 tolk.output(message.translate("unown_puzzle_pick_piece"))
 end
 end
+end
+
+function get_frames_press_walk()
+return FRAMES_PRESS_WALK
+end
+
+function get_frames_walk_finish()
+local ptr = RAM_MAP_OBJECTS 
+local sprite = memory.readbyte(ptr+0x01)
+-- 0x02 and 0x61 are player bike sprites
+if sprite == 0x02 or sprite == 0x61 then
+return FRAMES_BIKE_FINISH
+end
+return FRAMES_WALK_FINISH
 end
 
 function handle_special_cases()

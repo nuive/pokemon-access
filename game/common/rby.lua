@@ -75,13 +75,10 @@ end
 -- Returns true or false indicating whether we're on a map or not.
 function on_map()
 local mapnumber = get_map_id()
-local textbox_top, textbox_bottom = get_textbox_border(5)
 if mapnumber == 0xff 
 or memory.readbyte(RAM_IN_BATTLE) ~= 0
 or get_textbox_line()
 or screen.menu_position ~= nil then
-return false
-elseif screen.tile_lines[6]:find(textbox_top) and screen.tile_lines[12]:find(textbox_bottom) then
 return false
 else
 return true
@@ -530,6 +527,14 @@ and screen.tile_lines[7]:find("\x7f\x70\x7a") then
 return true
 end
 return false
+end
+
+function get_frames_press_walk()
+return FRAMES_PRESS_WALK
+end
+
+function get_frames_walk_finish()
+return FRAMES_WALK_FINISH
 end
 
 pokedex_info = nil

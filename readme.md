@@ -42,7 +42,7 @@ From there, load pokemon.lua, press run. It should say ready (or your language e
 * h - read enemy health if in a battle
 * r - read the surrounding tiles (for debugging purposes)
 
-### Item/Object
+### Item
 * j, k and l - previous, current and next item
 * shift k - rename current item
 * p - pathfind. This tries to find a path between you and the object selected.

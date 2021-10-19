@@ -90,7 +90,7 @@ function reached_destination(path, new_path, was_facing)
 			local destination_x, destination_y = get_destination_xy()
 			set_key("A", 2)
 			-- waiting for npc to reach new tile, in case it's walking
-			walk_wait(FRAMES_PRESS_WALK + FRAMES_WALK_FINISH)
+			walk_wait(get_frames_press_walk() + get_frames_walk_finish())
 			local new_x, new_y = get_destination_xy()
 			if destination_x == new_x and destination_y == new_y then
 				return true
@@ -154,7 +154,7 @@ function get_path()
 		-- the npc object contains wrong values
 		-- such as the x  and y both being -4 
 		if obj.x == -4 and obj.y == -4 then
-			walk_wait(FRAMES_PRESS_WALK)
+			walk_wait(get_frames_press_walk())
 		end
 		path = pathfind()
 	else
@@ -242,7 +242,7 @@ end -- function
 function walk_hm(hm_command, command)
 	local direction = get_hm_direction(hm_command, command)
 	walk_direction(direction)
-	walk_wait(FRAMES_WALK_FINISH)
+	walk_wait(get_frames_walk_finish())
 end
 
 function get_hm_direction(hm_command, command)
@@ -274,11 +274,11 @@ function set_key(key, frames)
 end -- function
 
 function walk_direction(direction)
-	set_key(direction, FRAMES_PRESS_WALK)
+	set_key(direction, get_frames_press_walk())
 	if not on_map() then 
 		return
 	end
-	walk_wait(FRAMES_WALK_FINISH)
+	walk_wait(get_frames_walk_finish())
 end
 
 function walk_wait(frames)
