@@ -351,22 +351,22 @@ local s = message.translate("now_on") .. string.format("%d, ", collisions[player
 
 -- Check up tile
 if player_y >= 0 then
-	s = s .. message.translate("up") .. string.format("%d, ", collisions[player_y - 1][player_x])
+s = s .. message.translate("up") .. string.format("%d, ", collisions[player_y - 1][player_x])
 end -- Check up tile
 
 -- Check down tile
 if player_y <= #collisions then
-	s = s .. message.translate("down") .. string.format("%d, ", collisions[player_y + 1][player_x])
+s = s .. message.translate("down") .. string.format("%d, ", collisions[player_y + 1][player_x])
 end -- Check down tile
 
 -- Check left tile
 if player_x >= 0 then
-	s = s .. message.translate("left") .. string.format("%d, ", collisions[player_y][player_x - 1])
+s = s .. message.translate("left") .. string.format("%d, ", collisions[player_y][player_x - 1])
 end -- Check left tile
 
 -- Check right tile
 if player_x <= #collisions[0] then
-	s = s .. message.translate("right") .. string.format("%d", collisions[player_y][player_x + 1])
+s = s .. message.translate("right") .. string.format("%d", collisions[player_y][player_x + 1])
 end -- Check right tile
 
 tolk.output(s)
@@ -432,101 +432,101 @@ end
 
 -- reset camera focus when camera_xy outside map
 function reset_camera_focus(player_x, player_y)
-	if camera_x == -7 and camera_y == -7 then
-		camera_x = player_x
-		camera_y = player_y
+if camera_x == -7 and camera_y == -7 then
+camera_x = player_x
+camera_y = player_y
 last_camera_tile = 0xff
-	end
+end
 end
 
 -- Moving camera focus
 function camera_move(y, x, ignore_wall)
-	local player_x, player_y = get_player_xy()
-	reset_camera_focus(player_x, player_y)
-	camera_y = camera_y + y
-	camera_x = camera_x + x
+local player_x, player_y = get_player_xy()
+reset_camera_focus(player_x, player_y)
+camera_y = camera_y + y
+camera_x = camera_x + x
 
-	local collisions = get_map_collisions()
-	local pan = (camera_x - player_x) * 5
-	local vol = 40 - math.abs(player_y - camera_y)
+local collisions = get_map_collisions()
+local pan = (camera_x - player_x) * 5
+local vol = 40 - math.abs(player_y - camera_y)
 
-	-- clipping pan and volume
-	if pan > 100 then
-		vol = vol - ((pan / 5) - 20)
-		pan = 100
-	end
-	if pan < -100 then
-		vol = vol - math.abs((pan / 5) - 20)
-		pan = -100
-	end
-	if vol < 5 then
-		vol = 5
-	end
+-- clipping pan and volume
+if pan > 100 then
+vol = vol - ((pan / 5) - 20)
+pan = 100
+end
+if pan < -100 then
+vol = vol - math.abs((pan / 5) - 20)
+pan = -100
+end
+if vol < 5 then
+vol = 5
+end
 
-	if camera_y >= -6 and camera_x >= -6 and camera_y <= #collisions and camera_x <= #collisions[1] then
-		local objects = get_objects()
-		for i, obj in pairs(objects) do
-			if obj.x == camera_x and obj.y == camera_y then
-				if obj.sprite_id == BOULDER_SPRITE then
-					audio.play(scriptpath .. "sounds\\s_boulder.wav", 0, pan, vol)
-				end -- sprite_id
-			end -- obj.xy
-		end -- for --]]
+if camera_y >= -6 and camera_x >= -6 and camera_y <= #collisions and camera_x <= #collisions[1] then
+local objects = get_objects()
+for i, obj in pairs(objects) do
+if obj.x == camera_x and obj.y == camera_y then
+if obj.sprite_id == BOULDER_SPRITE then
+audio.play(scriptpath .. "sounds\\s_boulder.wav", 0, pan, vol)
+end -- sprite_id
+end -- obj.xy
+end -- for --]]
 
-		if is_collision(collisions, camera_y, camera_x) then
-			if ignore_wall then
-				camera_x = camera_x - x
-				camera_y = camera_y - y
-			end
-			audio.play(scriptpath .. "sounds\\s_wall.wav", 0, pan, vol)
-		else
-			audio.play(scriptpath .. "sounds\\pass.wav", 0, pan, vol)
-			play_tile_sound(collisions[camera_y][camera_x], pan, vol, true)
-		end
-		last_camera_tile = collisions[camera_y][camera_x]
-	else
-		camera_x = camera_x - x
-		camera_y = camera_y - y
-		audio.play(scriptpath .. "sounds\\s_wall.wav", 0, pan, vol)
-	end
+if is_collision(collisions, camera_y, camera_x) then
+if ignore_wall then
+camera_x = camera_x - x
+camera_y = camera_y - y
+end
+audio.play(scriptpath .. "sounds\\s_wall.wav", 0, pan, vol)
+else
+audio.play(scriptpath .. "sounds\\pass.wav", 0, pan, vol)
+play_tile_sound(collisions[camera_y][camera_x], pan, vol, true)
+end
+last_camera_tile = collisions[camera_y][camera_x]
+else
+camera_x = camera_x - x
+camera_y = camera_y - y
+audio.play(scriptpath .. "sounds\\s_wall.wav", 0, pan, vol)
+end
 end
 
 function set_camera_default()
-	camera_x = -7
-	camera_y = -7
-	camera_move(0, 0, true)
+camera_x = -7
+camera_y = -7
+camera_move(0, 0, true)
 end
 
 function camera_move_left()
-	camera_move(0, -1, true)
+camera_move(0, -1, true)
 end
 
 function camera_move_right()
-	camera_move(0, 1, true)
+camera_move(0, 1, true)
 end
 
 function camera_move_up()
-	camera_move(-1, 0, true)
+camera_move(-1, 0, true)
 end
 
 function camera_move_down()
-	camera_move(1, 0, true)
+camera_move(1, 0, true)
 end
 
 function camera_move_left_ignore_wall()
-	camera_move(0, -1, false)
+camera_move(0, -1, false)
 end
 
 function camera_move_right_ignore_wall()
-	camera_move(0, 1, false)
+camera_move(0, 1, false)
 end
 
 function camera_move_up_ignore_wall()
-	camera_move(-1, 0, false)
+camera_move(-1, 0, false)
 end
 
 function camera_move_down_ignore_wall()
-	camera_move(1, 0, false)
+camera_move(1, 0, false)
 end
 
 function compare(t1, t2)
@@ -614,13 +614,13 @@ read_current_item()
 end
 
 function set_pathfind_hm()
-	pathfind_hm = not pathfind_hm
+pathfind_hm = not pathfind_hm
 update_impassable_tiles()
-	if pathfind_hm then
-		tolk.output(message.translate("use_hm"))
-	else
-		tolk.output(message.translate("not_use_hm"))
-	end
+if pathfind_hm then
+tolk.output(message.translate("use_hm"))
+else
+tolk.output(message.translate("not_use_hm"))
+end
 end
 
 function pathfind()
@@ -710,52 +710,50 @@ return false
 end
 
 function find_path_to(obj)
-	local path
-	local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
-	local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
-	if obj.type == "connection" then
-		local collisions = get_map_collisions()
-		local results = {}
-		if obj.direction == "north" then
-			results = get_connection_limits(memory.readword(RAM_MAP_NORTH_CONNECTION_START_POINTER), memory.readword(RAM_MAP_NORTH_CONNECTION_SIZE), NORTH)
-			dir = UP
-		elseif obj.direction == "south" then
-			results = get_connection_limits(memory.readword(RAM_MAP_SOUTH_CONNECTION_START_POINTER), memory.readword(RAM_MAP_SOUTH_CONNECTION_SIZE), SOUTH)
-			dir = DOWN
-		elseif obj.direction == "east" then
-			results = get_connection_limits(memory.readword(RAM_MAP_EAST_CONNECTION_START_POINTER), memory.readword(RAM_MAP_EAST_CONNECTION_SIZE), EAST)
-			dir = RIGHT
-		elseif obj.direction == "west" then
-			results = get_connection_limits(memory.readword(RAM_MAP_WEST_CONNECTION_START_POINTER), memory.readword(RAM_MAP_WEST_CONNECTION_SIZE), WEST)
-			dir = LEFT
-		end
-		local found = false
-		for dest_y = results.start_y, results.end_y do
-			for dest_x = results.start_x, results.end_x do
-				if not impassable_tiles[collisions[dest_y][dest_x]] and is_posible_connection(collisions, dest_x, dest_y, dir) then
-					if not found then
-						path = find_path_to_xy(dest_x, dest_y)
-					end
-					found = true
-				else
-					found = false
-				end
-				if path ~= nil then
-					break
-				end
-			end
-			if path ~= nil then
-				break
-			end
-		end
-	else
-		path = find_path_to_xy(obj.x, obj.y, true)
-	end
-	if path == nil then
-		tolk.output(message.translate("no_path"))
-		return
-	end
-	return path
+local path
+if obj.type == "connection" then
+local collisions = get_map_collisions()
+local results = {}
+if obj.direction == "north" then
+results = get_connection_limits(memory.readword(RAM_MAP_NORTH_CONNECTION_START_POINTER), memory.readword(RAM_MAP_NORTH_CONNECTION_SIZE), NORTH)
+dir = UP
+elseif obj.direction == "south" then
+results = get_connection_limits(memory.readword(RAM_MAP_SOUTH_CONNECTION_START_POINTER), memory.readword(RAM_MAP_SOUTH_CONNECTION_SIZE), SOUTH)
+dir = DOWN
+elseif obj.direction == "east" then
+results = get_connection_limits(memory.readword(RAM_MAP_EAST_CONNECTION_START_POINTER), memory.readword(RAM_MAP_EAST_CONNECTION_SIZE), EAST)
+dir = RIGHT
+elseif obj.direction == "west" then
+results = get_connection_limits(memory.readword(RAM_MAP_WEST_CONNECTION_START_POINTER), memory.readword(RAM_MAP_WEST_CONNECTION_SIZE), WEST)
+dir = LEFT
+end
+local found = false
+for dest_y = results.start_y, results.end_y do
+for dest_x = results.start_x, results.end_x do
+if not impassable_tiles[collisions[dest_y][dest_x]] and is_posible_connection(collisions, dest_x, dest_y, dir) then
+if not found then
+path = find_path_to_xy(dest_x, dest_y)
+end
+found = true
+else
+found = false
+end
+if path ~= nil then
+break
+end
+end
+if path ~= nil then
+break
+end
+end
+else
+path = find_path_to_xy(obj.x, obj.y, true)
+end
+if path == nil then
+tolk.output(message.translate("no_path"))
+return
+end
+return path
 end
 
 function has_talking_over_around(value, dir)
@@ -766,44 +764,44 @@ return false
 end
 
 function find_path_to_xy(dest_x, dest_y, search)
-	local player_x, player_y = get_player_xy()
-	local collisions = get_map_collisions()
-	local allnodes = {}
-	local height = #collisions - 6
-	local width = #collisions[0] - 6
-	local start = nil
-	local dest = nil
-	-- set all objects to impassable tiles
-	-- 0xff is the tile list delimiter, so it won't ever be a passable tile
-	for i, object in ipairs(get_objects()) do
-		if not object.ignorable then
-			collisions[object.y][object.x] = 0xff
-		end
-	end
-	for i, warp in ipairs(get_warps()) do
-		if warp.x ~= dest_x and warp.y ~= dest_y then
-			if collisions[warp.y] == nil then 
-				return 
-			end
-			collisions[warp.y][warp.x] = 0xff
-		end
-	end
-	-- generate the all nodes list for pathfinding, and track the start and end nodes
-	for y = 0, height do
-		for x = 0, width do
-			local n = {x=x, y=y, type=collisions[y][x], special_tiles=get_special_tiles_around(collisions, y, x), is_dest = false}
-			if x == player_x and y == player_y then
-				start = n
-			end
-			if x == dest_x and y == dest_y then
-				n.is_dest = true
-				dest = n
-			end
-			table.insert(allnodes, n)
-		end -- x
-	end -- y
-	path = astar.path(start, dest, allnodes, true, valid_path)
-	return path
+local player_x, player_y = get_player_xy()
+local collisions = get_map_collisions()
+local allnodes = {}
+local height = #collisions - 6
+local width = #collisions[0] - 6
+local start = nil
+local dest = nil
+-- set all objects to impassable tiles
+-- 0xff is the tile list delimiter, so it won't ever be a passable tile
+for i, object in ipairs(get_objects()) do
+if not object.ignorable then
+collisions[object.y][object.x] = 0xff
+end
+end
+for i, warp in ipairs(get_warps()) do
+if warp.x ~= dest_x and warp.y ~= dest_y then
+if collisions[warp.y] == nil then 
+return 
+end
+collisions[warp.y][warp.x] = 0xff
+end
+end
+-- generate the all nodes list for pathfinding, and track the start and end nodes
+for y = 0, height do
+for x = 0, width do
+local n = {x=x, y=y, type=collisions[y][x], special_tiles=get_special_tiles_around(collisions, y, x), is_dest = false}
+if x == player_x and y == player_y then
+start = n
+end
+if x == dest_x and y == dest_y then
+n.is_dest = true
+dest = n
+end
+table.insert(allnodes, n)
+end -- x
+end -- y
+path = astar.path(start, dest, allnodes, true, valid_path)
+return path
 end
 
 function clean_path(path)
@@ -828,7 +826,7 @@ return group_unique_items(new_path)
 end
 
 function format_hm_command(command)
-	return command .. " " .. message.translate("on_way") .. " "
+return command .. " " .. message.translate("on_way") .. " "
 end
 
 function read_path(path)
@@ -1303,7 +1301,8 @@ handle_user_actions()
 screen = get_screen()
 handle_special_cases()
 local text = table.concat(screen.lines, "")
-if text ~= oldtext then
+if text ~= 
+oldtext then
 want_read = true
 text_updated_counter = counter
 oldtext = text

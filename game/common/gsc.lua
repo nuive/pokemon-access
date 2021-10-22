@@ -411,33 +411,33 @@ return true
 end -- valid
 
 function play_tile_sound(type, pan, vol, is_camera)
-	if type == 0x10
-	or type == 0x14
-	or type == 0x18
-	or type == 0x1c
-	or (type >= 0x48 and type <= 0x4c) then
-		audio.play(scriptpath .. "sounds\\s_grass.wav", 0, pan, vol)
-	elseif is_cut_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_cut.wav", 0, pan, vol)
-	elseif type == 0x23
-	or type == 0x2b then
-		audio.play(scriptpath .. "sounds\\s_ice.wav", 0, pan, vol)
-	elseif is_whirlpool_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_whirl.wav", 0, pan, vol)
-	elseif is_waterfall_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_waterfall.wav", 0, pan, vol)
-	elseif is_water_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
-	elseif (type >= 0xa0 and type < 0xb0) then
-		audio.play(scriptpath .. "sounds\\s_mad.wav", 0, pan, vol)
-	elseif is_camera and (type >= 0x70 and type < 0x80) then
-		audio.play(scriptpath .. "sounds\\s_stair.wav", 0, pan, vol)
-	elseif is_camera and (type == 0x60
-	or type == 0x68) then
-		audio.play(scriptpath .. "sounds\\s_hole.wav", 0, pan, vol)
-	else
-		audio.play(scriptpath .. "sounds\\s_default.wav", 0, pan, vol)
-	end -- switch tile type
+if type == 0x10
+or type == 0x14
+or type == 0x18
+or type == 0x1c
+or (type >= 0x48 and type <= 0x4c) then
+audio.play(scriptpath .. "sounds\\s_grass.wav", 0, pan, vol)
+elseif is_cut_tile(type) then
+audio.play(scriptpath .. "sounds\\s_cut.wav", 0, pan, vol)
+elseif type == 0x23
+or type == 0x2b then
+audio.play(scriptpath .. "sounds\\s_ice.wav", 0, pan, vol)
+elseif is_whirlpool_tile(type) then
+audio.play(scriptpath .. "sounds\\s_whirl.wav", 0, pan, vol)
+elseif is_waterfall_tile(type) then
+audio.play(scriptpath .. "sounds\\s_waterfall.wav", 0, pan, vol)
+elseif is_water_tile(type) then
+audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
+elseif (type >= 0xa0 and type < 0xb0) then
+audio.play(scriptpath .. "sounds\\s_mad.wav", 0, pan, vol)
+elseif is_camera and (type >= 0x70 and type < 0x80) then
+audio.play(scriptpath .. "sounds\\s_stair.wav", 0, pan, vol)
+elseif is_camera and (type == 0x60
+or type == 0x68) then
+audio.play(scriptpath .. "sounds\\s_hole.wav", 0, pan, vol)
+else
+audio.play(scriptpath .. "sounds\\s_default.wav", 0, pan, vol)
+end -- switch tile type
 end
 
 function keyboard_showing(screen)

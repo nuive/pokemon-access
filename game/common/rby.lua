@@ -50,7 +50,7 @@ else
 impassable_tiles[i] = true
 end
 end
-	local ptr = memory.readword(RAM_PASSABLE_TILES)
+local ptr = memory.readword(RAM_PASSABLE_TILES)
 while memory.gbromreadbyte(ptr) ~= 0xff do
 impassable_tiles[memory.gbromreadbyte(ptr)] = false
 ptr = ptr + 1
@@ -435,23 +435,23 @@ end -- valid
 
 function play_tile_sound(type, pan, vol, is_camera)
 local tileset = memory.readbyte(RAM_MAP_HEADER)
-	if type == memory.readbyte(RAM_GRASS_TILE) then
-		audio.play(scriptpath .. "sounds\\s_grass.wav", 0, pan, vol)
-	elseif is_cut_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_cut.wav", 0, pan, vol)
-	elseif is_water_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
-	elseif is_block_arrow(tileset, DOWN) then
-		audio.play(scriptpath .. "sounds\\s_move_down.wav", 0, pan, vol)
+if type == memory.readbyte(RAM_GRASS_TILE) then
+audio.play(scriptpath .. "sounds\\s_grass.wav", 0, pan, vol)
+elseif is_cut_tile(type) then
+audio.play(scriptpath .. "sounds\\s_cut.wav", 0, pan, vol)
+elseif is_water_tile(type) then
+audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
+elseif is_block_arrow(tileset, DOWN) then
+audio.play(scriptpath .. "sounds\\s_move_down.wav", 0, pan, vol)
 elseif is_block_arrow(tileset, UP) then
-		audio.play(scriptpath .. "sounds\\s_move_up.wav", 0, pan, vol)
+audio.play(scriptpath .. "sounds\\s_move_up.wav", 0, pan, vol)
 elseif is_block_arrow(tileset, LEFT) then
-		audio.play(scriptpath .. "sounds\\s_move.wav", 0, -100, vol)
+audio.play(scriptpath .. "sounds\\s_move.wav", 0, -100, vol)
 elseif is_block_arrow(tileset, RIGHT) then
-		audio.play(scriptpath .. "sounds\\s_move.wav", 0, 100, vol)
+audio.play(scriptpath .. "sounds\\s_move.wav", 0, 100, vol)
 elseif is_camera and ((tileset == 0x16 and type == 0x5e)
 or (tileset == 0x07 and type == 0x3f)) then
-		audio.play(scriptpath .. "sounds\\no_pass.wav", 0, pan, vol)
+audio.play(scriptpath .. "sounds\\no_pass.wav", 0, pan, vol)
 -- 	elseif type == 0x23 then
 -- 		audio.play(scriptpath .. "sounds\\s_ice.wav", 0, pan, vol)
 -- 	elseif type == 0x24 then
@@ -460,17 +460,17 @@ or (tileset == 0x07 and type == 0x3f)) then
 -- 		audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
 -- 	elseif type == 0x33 then
 -- 		audio.play(scriptpath .. "sounds\\s_waterfall.wav", 0, pan, vol)
-	elseif is_camera and (type == 0x13) then
-		audio.play(scriptpath .. "sounds\\s_stairup.wav", 0, pan, vol)
-	elseif is_camera and (type == 0x1b) then
-		audio.play(scriptpath .. "sounds\\s_stairdown.wav", 0, pan, vol)
-	elseif is_camera and tileset == 0x11 and type == 0x22 then
-		audio.play(scriptpath .. "sounds\\s_hole.wav", 0, pan, vol)
-	elseif is_camera and tileset == 0x11 and type == 0x2d then
-		audio.play(scriptpath .. "sounds\\s_switch.wav", 0, pan, vol)
-	else
-		audio.play(scriptpath .. "sounds\\s_default.wav", 0, pan, vol)
-	end -- switch tile type
+elseif is_camera and (type == 0x13) then
+audio.play(scriptpath .. "sounds\\s_stairup.wav", 0, pan, vol)
+elseif is_camera and (type == 0x1b) then
+audio.play(scriptpath .. "sounds\\s_stairdown.wav", 0, pan, vol)
+elseif is_camera and tileset == 0x11 and type == 0x22 then
+audio.play(scriptpath .. "sounds\\s_hole.wav", 0, pan, vol)
+elseif is_camera and tileset == 0x11 and type == 0x2d then
+audio.play(scriptpath .. "sounds\\s_switch.wav", 0, pan, vol)
+else
+audio.play(scriptpath .. "sounds\\s_default.wav", 0, pan, vol)
+end -- switch tile type
 local x, y = nil
 if is_camera then
 x, y = get_camera_xy()
