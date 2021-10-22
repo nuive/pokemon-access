@@ -45,9 +45,9 @@ From there, load pokemon.lua, press run. It should say ready (or your language e
 ### Item
 * j, k and l - previous, current and next item
 * shift k - rename current item
-* p - pathfind. This tries to find a path between you and the object selected.
-* Shift + P - Toggle HM compatibility when using pathfind. For example surf or cut
-* i - walk to selected item. This tries to walk to the selected object.
+* p - read pathfind. This tries to find and read a path to the selected item.
+* Shift + P - Toggle HM compatibility when searching for path. For example surf or cut
+* i - walk to selected item. This tries to find and walk a path to the selected item.
 
 ### Camera
 * s - move the camera left, stopping at walls
@@ -57,7 +57,7 @@ From there, load pokemon.lua, press run. It should say ready (or your language e
 * d - move the camera to the player's position
 * add shift to s/f/e/c to move the camera, ignoring walls
 * Shift + y - read current camera position
-* w - walk to camera. This tries to walk to camera's position.
+* w - walk to camera. This tries to find and walk a path to camera's position.
 
 ### Gold/SILVER/Crystal exclusive keys
 * shift+d - say which piece you are holding (on the unown puzzles)
