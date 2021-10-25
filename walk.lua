@@ -22,7 +22,7 @@ local x = camera_xy[1]
 local y = camera_xy[2]
 if x < 0 or y < 0 
 or x >= memory.readbyte(RAM_MAP_WIDTH)*2 or y >= memory.readbyte(RAM_MAP_HEIGHT)*2 then
-tolk.output(message.translate("not_map"))
+tolk.output(message.translate("no_path"))
 return
 end
 if standing_at_desination() then
