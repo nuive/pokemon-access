@@ -50,7 +50,7 @@ else
 impassable_tiles[i] = true
 end
 end
-local ptr = memory.readword(RAM_PASSABLE_TILES)
+	local ptr = memory.readword(RAM_PASSABLE_TILES)
 while memory.gbromreadbyte(ptr) ~= 0xff do
 impassable_tiles[memory.gbromreadbyte(ptr)] = false
 ptr = ptr + 1

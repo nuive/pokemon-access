@@ -433,8 +433,8 @@ end
 -- reset camera focus when camera_xy outside map
 function reset_camera_focus(player_x, player_y)
 	if camera_x == -7 and camera_y == -7 then
-			camera_x = player_x
-			camera_y = player_y
+		camera_x = player_x
+		camera_y = player_y
 last_camera_tile = 0xff
 	end
 end
@@ -617,9 +617,9 @@ function set_pathfind_hm()
 	pathfind_hm = not pathfind_hm
 update_impassable_tiles()
 	if pathfind_hm then
-			tolk.output(message.translate("use_hm"))
+		tolk.output(message.translate("use_hm"))
 	else
-			tolk.output(message.translate("not_use_hm"))
+		tolk.output(message.translate("not_use_hm"))
 	end
 end
 
