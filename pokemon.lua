@@ -1301,8 +1301,7 @@ handle_user_actions()
 screen = get_screen()
 handle_special_cases()
 local text = table.concat(screen.lines, "")
-if text ~= 
-oldtext then
+if text ~= oldtext then
 want_read = true
 text_updated_counter = counter
 oldtext = text
