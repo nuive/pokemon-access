@@ -351,22 +351,22 @@ local s = message.translate("now_on") .. string.format("%d, ", collisions[player
 
 -- Check up tile
 if player_y >= 0 then
-s = s .. message.translate("up") .. string.format("%d, ", collisions[player_y - 1][player_x])
+	s = s .. message.translate("up") .. string.format("%d, ", collisions[player_y - 1][player_x])
 end -- Check up tile
 
 -- Check down tile
 if player_y <= #collisions then
-s = s .. message.translate("down") .. string.format("%d, ", collisions[player_y + 1][player_x])
+	s = s .. message.translate("down") .. string.format("%d, ", collisions[player_y + 1][player_x])
 end -- Check down tile
 
 -- Check left tile
 if player_x >= 0 then
-s = s .. message.translate("left") .. string.format("%d, ", collisions[player_y][player_x - 1])
+	s = s .. message.translate("left") .. string.format("%d, ", collisions[player_y][player_x - 1])
 end -- Check left tile
 
 -- Check right tile
 if player_x <= #collisions[0] then
-s = s .. message.translate("right") .. string.format("%d", collisions[player_y][player_x + 1])
+	s = s .. message.translate("right") .. string.format("%d", collisions[player_y][player_x + 1])
 end -- Check right tile
 
 tolk.output(s)
@@ -432,101 +432,101 @@ end
 
 -- reset camera focus when camera_xy outside map
 function reset_camera_focus(player_x, player_y)
-if camera_x == -7 and camera_y == -7 then
-camera_x = player_x
-camera_y = player_y
+	if camera_x == -7 and camera_y == -7 then
+			camera_x = player_x
+			camera_y = player_y
 last_camera_tile = 0xff
-end
+	end
 end
 
 -- Moving camera focus
 function camera_move(y, x, ignore_wall)
-local player_x, player_y = get_player_xy()
-reset_camera_focus(player_x, player_y)
-camera_y = camera_y + y
-camera_x = camera_x + x
+	local player_x, player_y = get_player_xy()
+	reset_camera_focus(player_x, player_y)
+	camera_y = camera_y + y
+	camera_x = camera_x + x
 
-local collisions = get_map_collisions()
-local pan = (camera_x - player_x) * 5
-local vol = 40 - math.abs(player_y - camera_y)
+	local collisions = get_map_collisions()
+	local pan = (camera_x - player_x) * 5
+	local vol = 40 - math.abs(player_y - camera_y)
 
--- clipping pan and volume
-if pan > 100 then
-vol = vol - ((pan / 5) - 20)
-pan = 100
-end
-if pan < -100 then
-vol = vol - math.abs((pan / 5) - 20)
-pan = -100
-end
-if vol < 5 then
-vol = 5
-end
+	-- clipping pan and volume
+	if pan > 100 then
+		vol = vol - ((pan / 5) - 20)
+		pan = 100
+	end
+	if pan < -100 then
+		vol = vol - math.abs((pan / 5) - 20)
+		pan = -100
+	end
+	if vol < 5 then
+		vol = 5
+	end
 
-if camera_y >= -6 and camera_x >= -6 and camera_y <= #collisions and camera_x <= #collisions[1] then
-local objects = get_objects()
-for i, obj in pairs(objects) do
-if obj.x == camera_x and obj.y == camera_y then
-if obj.sprite_id == BOULDER_SPRITE then
-audio.play(scriptpath .. "sounds\\s_boulder.wav", 0, pan, vol)
-end -- sprite_id
-end -- obj.xy
-end -- for --]]
+	if camera_y >= -6 and camera_x >= -6 and camera_y <= #collisions and camera_x <= #collisions[1] then
+		local objects = get_objects()
+		for i, obj in pairs(objects) do
+			if obj.x == camera_x and obj.y == camera_y then
+				if obj.sprite_id == BOULDER_SPRITE then
+					audio.play(scriptpath .. "sounds\\s_boulder.wav", 0, pan, vol)
+				end -- sprite_id
+			end -- obj.xy
+		end -- for --]]
 
-if is_collision(collisions, camera_y, camera_x) then
-if ignore_wall then
-camera_x = camera_x - x
-camera_y = camera_y - y
-end
-audio.play(scriptpath .. "sounds\\s_wall.wav", 0, pan, vol)
-else
-audio.play(scriptpath .. "sounds\\pass.wav", 0, pan, vol)
-play_tile_sound(collisions[camera_y][camera_x], pan, vol, true)
-end
-last_camera_tile = collisions[camera_y][camera_x]
-else
-camera_x = camera_x - x
-camera_y = camera_y - y
-audio.play(scriptpath .. "sounds\\s_wall.wav", 0, pan, vol)
-end
+		if is_collision(collisions, camera_y, camera_x) then
+			if ignore_wall then
+				camera_x = camera_x - x
+				camera_y = camera_y - y
+			end
+			audio.play(scriptpath .. "sounds\\s_wall.wav", 0, pan, vol)
+		else
+			audio.play(scriptpath .. "sounds\\pass.wav", 0, pan, vol)
+			play_tile_sound(collisions[camera_y][camera_x], pan, vol, true)
+		end
+		last_camera_tile = collisions[camera_y][camera_x]
+	else
+		camera_x = camera_x - x
+		camera_y = camera_y - y
+		audio.play(scriptpath .. "sounds\\s_wall.wav", 0, pan, vol)
+	end
 end
 
 function set_camera_default()
-camera_x = -7
-camera_y = -7
-camera_move(0, 0, true)
+	camera_x = -7
+	camera_y = -7
+	camera_move(0, 0, true)
 end
 
 function camera_move_left()
-camera_move(0, -1, true)
+	camera_move(0, -1, true)
 end
 
 function camera_move_right()
-camera_move(0, 1, true)
+	camera_move(0, 1, true)
 end
 
 function camera_move_up()
-camera_move(-1, 0, true)
+	camera_move(-1, 0, true)
 end
 
 function camera_move_down()
-camera_move(1, 0, true)
+	camera_move(1, 0, true)
 end
 
 function camera_move_left_ignore_wall()
-camera_move(0, -1, false)
+	camera_move(0, -1, false)
 end
 
 function camera_move_right_ignore_wall()
-camera_move(0, 1, false)
+	camera_move(0, 1, false)
 end
 
 function camera_move_up_ignore_wall()
-camera_move(-1, 0, false)
+	camera_move(-1, 0, false)
 end
 
 function camera_move_down_ignore_wall()
-camera_move(1, 0, false)
+	camera_move(1, 0, false)
 end
 
 function compare(t1, t2)
@@ -614,13 +614,13 @@ read_current_item()
 end
 
 function set_pathfind_hm()
-pathfind_hm = not pathfind_hm
+	pathfind_hm = not pathfind_hm
 update_impassable_tiles()
-if pathfind_hm then
-tolk.output(message.translate("use_hm"))
-else
-tolk.output(message.translate("not_use_hm"))
-end
+	if pathfind_hm then
+			tolk.output(message.translate("use_hm"))
+	else
+			tolk.output(message.translate("not_use_hm"))
+	end
 end
 
 function pathfind()
