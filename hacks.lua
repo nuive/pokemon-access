@@ -1,8 +1,8 @@
 {
-  ["crystal"] = {
-    [0x8447] = {
+  crystal = {
+    [33863] = {
       game = "crystal-clear",
       language = "en"
-    },
-  },
+    }
+  }
 }
