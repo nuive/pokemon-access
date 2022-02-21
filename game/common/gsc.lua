@@ -500,7 +500,16 @@ if old_puzzle_cursor == nil and puzzle_cursor ~= 0 then
 return
 end
 if puzzle_cursor ~= old_puzzle_cursor then
-local piece = string.format("%d", memory.readbyte(RAM_UNOWN_PUZZLE+puzzle_cursor))
+local piece = memory.readbyte(RAM_UNOWN_PUZZLE+puzzle_cursor)
+if piece == 0 then
+if puzzle_cursor < 6 or puzzle_cursor % 6 == 0 or puzzle_cursor % 6 == 5 then
+piece = message.translate("frame")
+else
+piece = message.translate("empty")
+end
+else
+piece = string.format("%d", memory.readbyte(RAM_UNOWN_PUZZLE+puzzle_cursor))
+end
 tolk.output(piece)
 old_puzzle_cursor = puzzle_cursor
 end

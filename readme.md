@@ -1,5 +1,5 @@
 # Pokémon Access
-# Version 2.3
+# Version 2.5
 
 ## Introduction
 
@@ -62,22 +62,19 @@ Make sure num lock is off while playing the game, or the keys won't work.
 
 ## HackRom support
 Current version of the script has extended support for hackroms of the games previously mentioned.
-In the future, you'll have an in-game feature to tell the script if you are playing a hack or not. For now, you have to edit the file hacks.lua. You have to know  basic lua structures in order to do that.
+In the future, you'll have a more intuitive in-game feature to manage HackRoms. For now, the process is as follows.
 
-Regarding "hacks.lua", keep in mind that...
-{
--- base-game structure
-  ["crystal"] = { -- base-game folder
--- hackrom structure
-    [0x8447] = { -- rom hack checksum (you can get it on VBA-RR (file/rom information)
-      game = "crystal-clear", -- script folder of the hack (can be the same as base-game)
-      language = "en" -- language folder of the hack
-    }, -- end hackrom structure
--- paste here previous structure if you want to add more hacks of Pokémon Crystal
-  }, -- end base-game structure
-  -- paste here previous structure if you want to add hacks of different games (gold, blue, yellow) changing the apropriate values
-}
+You've loaded a ROM that the script detects as "Language not supported" or "Game not supported".
+You return to the game ignoring the previous result... but wait, if you try to execute any script command you'll only get the message "Script not loaded". Okay, let's fix this...
 
+1. With the incompatible game running, press shift+h. A window will show up, asking you for a "base game folder". This, in other words, is the base game script that this incompatible game will use. You'll have to access the lua/game folder, and here you'll see all compatible scripts. Keep in mind that you have to tell the script the exact folder name. For example, if you want to use the red/blue script, you'll write 'red_blue'; if you want to use the pokémon crystal script you'll write crystal, etc...
+2. When you type the base folder name and press "OK", if the folder is valid the script now asks you for a language. Now you have to enter into the folder you selected on previous step and check what languages are available for the selected game. As in the previous step, you have to put the folder name ("en" for english, "fr" for french...)
+3. When you type the language code and press "OK", if the language is valid the script will say "Done. Restart the script".
+4. Congratulations! Now you can enjoy your hack!
+
+### Notes
+* You can edit previously added HackRoms pressing again Shift + H, for example if you want to try another base script or if you develop a custom extension  for a specific hack.
+* Keep in mind that if the chosen language and the hack's language didn't match, the script will probably crash.
 
 ## Notes
 New translations for the supported games are welcome. You should translate the files "maps.lua" and "sprites.lua" located on the game/[game]/[lang]  ([lang] can be any of the existing languages, choose which is better for you to translate from). You should translate asswell the file messages/[lang].lua (applies same rules). Once translated, you can send these files to me (or make a PR).

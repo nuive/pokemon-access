@@ -24,10 +24,10 @@ LPWSTR  lpWideCharStr, int cchWideChar);
 
 local CP_UTF8 = 65001
 local function to_utf16(s)
-local needed = kernel32.MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0)
+local needed = kernel32.MultiByteToWideChar(CP_UTF8, 0, s, -1, nil, 0)
 local buf = ffi.new("wchar_t[?]", needed)
 local written = kernel32.MultiByteToWideChar(CP_UTF8, 0, s, -1, buf, needed)
-return ffi.string(buf, written*2)
+return ffi.string(ffi.cast("char *", buf), written*2)
 end
 
 local function to_utf8(s)

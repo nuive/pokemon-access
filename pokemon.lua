@@ -50,21 +50,32 @@ last_camera_tile = 0xff
 pathfind_hm = false
 inpassible_tiles = {}
 
+function path_exists(path)
+   local ok, err, code = os.rename(path, path)
+   if not ok then
+      if code == 13 then
+         -- Permission denied, but it exists
+         return true
+      end
+   end
+   return ok, err
+end
+
 function load_game()
-if language == nil then
-tolk.output("Language not supported.")
+if data == nil then
+tolk.output("Game data not found.")
 return false
 end
 local f = nil
 -- load memory and text values
-local path = scriptpath .. "game\\" .. game .. "\\" .. language .. "\\"
+local path = scriptpath .. "game\\" .. game .. "\\" .. data .. "\\"
 local t = {"chars.lua", "fonts.lua", "memory.lua"}
 for i, v in ipairs(t) do
 f = loadfile(path .. v)
 if f ~= nil then
 f()
 else
-tolk.output("Language not supported.")
+tolk.output("Game data not found.")
 return false
 end
 end
@@ -90,15 +101,15 @@ f()
 else
 tolk.output("Warning: No specific game script is provided. Accessibility could be limited.")
 end
-return load_language()
+return load_data()
 end
 
-function load_language()
-if language == nil then
-tolk.output("Language not supported.")
+function load_data()
+if data == nil then
+tolk.output("Game data not found.")
 return false
 end
-local path = scriptpath .. "game\\" .. game .. "\\" .. language .. "\\"
+local path = scriptpath .. "game\\" .. game .. "\\" .. data .. "\\"
 local t = {"maps.lua", "sprites.lua"}
 local partial = false
 for i, v in ipairs(t) do
@@ -107,11 +118,12 @@ if f ~= nil then
 f()
 else
 partial = true
+tolk.output(v)
 end
 end
-message.set_strings(language)
+message.set_strings(data)
 if partial then
-tolk.output("Warning: Language not fully supported.")
+tolk.output("Warning: Game not fully supported.")
 end
 return true
 end
@@ -215,19 +227,17 @@ bottom = bottom .. "\x7e"
 return top, bottom
 end
 
-last_line = ""
-last_textbox_text = nil
 function read_text(auto)
 if auto then
 local textbox = get_textbox()
 if textbox ~= nil then
-if #textbox > 2 then
+if #textbox == 4 then
 if trim(textbox[2]) == trim(last_line) then
 textbox[2] = ""
 end
 last_line = textbox[4]
 end
-textbox_text = table.concat(textbox, "")
+textbox_text = table.concat(get_textbox(), "")
 if textbox_text ~= last_textbox_text then
 output_textbox(textbox)
 end
@@ -540,7 +550,6 @@ end
 return true
 end
 
-old_pressed_keys = {}
 function handle_user_actions()
 local kbd = input.read()
 local pressed_keys = {}
@@ -569,12 +578,18 @@ if command == nil then
 return
 end
 tolk.silence()
-local fn, needs_map = unpack(command)
+local fn, needs_script, needs_map = unpack(command)
+if data ~= nil then
 if needs_map and not on_map() then
 tolk.output(message.translate("not_map"))
 else
 fn(args)
 end -- not on map
+elseif not needs_script then
+fn(args)
+else
+tolk.output("Script not loaded.")
+end -- data check
 end
 
 function read_current_item()
@@ -702,8 +717,6 @@ end
 
 function find_path_to(obj)
 local path
-local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
-local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
 
 if obj.type == "connection" then
 local collisions = get_map_collisions()
@@ -773,7 +786,7 @@ collisions[object.y][object.x] = 0xff
 end
 end
 for i, warp in ipairs(get_warps()) do
-if warp.x ~= dest_x and warp.y ~= dest_y then
+if warp.x ~= dest_x or warp.y ~= dest_y then
 collisions[warp.y][warp.x] = 0xff
 end
 end
@@ -885,13 +898,10 @@ return line:sub(startpos, endpos)
 end
 
 function translate_tileline(tileline)
-local printable = is_printable_screen()
 local l = ""
+if is_printable_screen() then
 for i = 1, #tileline do
-if printable then
 l = l .. translate(tileline:sub(i, i):byte())
-else
-l = l .. " "
 end
 end
 return l
@@ -1164,6 +1174,61 @@ return camera_x, camera_y
 end
 end
 
+function init_script()
+commands = {
+[{"Y"}] = {read_coords, true, true};
+[{"Y", "shift"}] = {read_camera, true, true};
+[{"J"}] = {read_previous_item, true, true};
+[{"K"}] = {read_current_item, true, true};
+[{"L"}] = {read_next_item, true, true};
+[{"P"}] = {pathfind, true, true};
+[{"P", "shift"}] = {set_pathfind_hm, true, true};
+[{"T"}] = {read_text, true, false};
+[{"R"}] = {read_tiles, true, true};
+[{"M"}] = {read_mapname, true, true};
+[{"K", "shift"}] = {rename_current, true, true};
+[{"M", "shift"}] = {rename_map, true, true};
+[{"S"}] = {camera_move_left, true, true},
+[{"F"}] = {camera_move_right, true, true},
+[{"E"}] = {camera_move_up, true, true},
+[{"C"}] = {camera_move_down, true, true},
+[{"D"}] = {set_camera_default, true, true},
+[{"S", "shift"}] = {camera_move_left_ignore_wall, true, true},
+[{"F", "shift"}] = {camera_move_right_ignore_wall, true, true},
+[{"E", "shift"}] = {camera_move_up_ignore_wall, true, true},
+[{"C", "shift"}] = {camera_move_down_ignore_wall, true, true},
+[{"H"}] = {read_enemy_health, true, false},
+[{"H", "shift"}] = {add_hackrom_values, false, false},
+}
+
+game = nil
+data = nil
+base_game = nil
+chars = {}
+fonts = {}
+maps = {}
+sprites = {}
+-- get current game and data
+get_game()
+
+if data ~= nil then
+names_file = "names_" .. game .. "_" .. data .. ".lua"
+res, names = load_table(names_file)
+if res == nil then
+names = {}
+end
+
+old_pressed_keys = {}
+last_line = ""
+last_textbox_text = nil
+counter = 0
+oldtext = "" -- last text seen
+current_item = nil
+in_keyboard = false
+tolk.output(message.translate("ready"))
+end
+end
+
 function get_game()
 local valid = false
 local game_title = memory.gbromreadbyterange(0x134, 16)
@@ -1171,10 +1236,22 @@ local code = ""
 for i = 0, 2 do
 code = code .. string.char(game_title[12+i])
 end
-if codemap[code] then
 local lang = string.char(game_title[15])
+local checksum = memory.gbromreadbyte(0x14e)*256 + memory.gbromreadbyte(0x14f)
+if codemap[code] then
 game = codemap[code]
-language = langmap[lang]
+if langmap[lang] then
+data = langmap[lang]
+valid = true
+-- check if it's hack
+set_hackrom_values(checksum)
+elseif set_hackrom_values(checksum, code .. lang) then
+valid = true
+else
+tolk.output("Game data not found.")
+return false
+end
+elseif set_hackrom_values(checksum, code .. lang) then
 valid = true
 else
 if parse_old_title(game_title) then
@@ -1184,8 +1261,6 @@ return false
 end
 end
 if valid then
--- check if it's hack
-set_hackrom_values()
 return load_game()
 end
 tolk.output("Game not supported.")
@@ -1202,14 +1277,16 @@ end
 oldgame = oldgame:lower()
 local checksum = memory.gbromreadbyte(0x14e)*256 + memory.gbromreadbyte(0x14f)
 for v in pairs(game_checksum) do
-if v:find(oldgame) ~= nil then
-oldgame = v
-if game_checksum[oldgame][checksum] ~= nil then
-game = oldgame
-language = game_checksum[game][checksum]
+if oldgame ~= "" and v:find(oldgame) ~= nil then
+game = v
+if game_checksum[game][checksum] ~= nil then
+data = game_checksum[game][checksum]
+return true
+-- check if it's hack
+elseif set_hackrom_values(checksum) then
 return true
 else
-tolk.output("Language not supported.")
+tolk.output("Game data not found.")
 return false
 end
 end
@@ -1218,71 +1295,83 @@ tolk.output("Game not supported.")
 return false
 end
 
-function set_hackrom_values()
+function set_hackrom_values(checksum, game_code)
 loaded, hacks = load_table("hacks.lua")
-if loaded ~= nil and hacks[game] ~= nil then
-local checksum = memory.gbromreadbyte(0x14e)*256 + memory.gbromreadbyte(0x14f)
-if hacks[game][checksum] ~= nil then
-language = hacks[game][checksum].language
-game = hacks[game][checksum].game
+if loaded ~= nil and checksum ~= nil then
+local curgame = ""
+if game_code ~= nil then
+curgame = game_code
+else
+curgame = game
+end
+if hacks[curgame] ~= nil and hacks[curgame][checksum] ~= nil then
+base_game = game
+game = hacks[curgame][checksum].game
+data = hacks[curgame][checksum].data
+return true
 end
 end
+return false
 end
 
-commands = {
-[{"Y"}] = {read_coords, true};
-[{"Y", "shift"}] = {read_camera, true};
-[{"J"}] = {read_previous_item, true};
-[{"K"}] = {read_current_item, true};
-[{"L"}] = {read_next_item, true};
-[{"P"}] = {pathfind, true};
-[{"P", "shift"}] = {set_pathfind_hm, true};
-[{"T"}] = {read_text, false};
-[{"R"}] = {read_tiles, true};
-[{"M"}] = {read_mapname, true};
-[{"K", "shift"}] = {rename_current, true};
-[{"M", "shift"}] = {rename_map, true};
-[{"S"}] = {camera_move_left, true},
-[{"F"}] = {camera_move_right, true},
-[{"E"}] = {camera_move_up, true},
-[{"C"}] = {camera_move_down, true},
-[{"D"}] = {set_camera_default, true},
-[{"S", "shift"}] = {camera_move_left_ignore_wall, true},
-[{"F", "shift"}] = {camera_move_right_ignore_wall, true},
-[{"E", "shift"}] = {camera_move_up_ignore_wall, true},
-[{"C", "shift"}] = {camera_move_down_ignore_wall, true},
-[{"H"}] = {read_enemy_health, false},
-}
+function add_hackrom_values()
+loaded, hacks = load_table("hacks.lua")
+if loaded == nil then
+hacks = {}
+end
+local id = nil
+if game == nil then
+id = ""
+for i = 0, 3 do
+id = id .. string.char(memory.gbromreadbyte(0x13f+i))
+end
+elseif base_game ~= nil then
+id = base_game
+else
+id = game
+end
+if hacks[id] == nil then
+hacks[id] = {}
+end
+local checksum = memory.gbromreadbyte(0x14e)*256 + memory.gbromreadbyte(0x14f)
+if hacks[id][checksum] == nil then
+hacks[id][checksum] = {}
+end
+local path = scriptpath .. "game\\"
+local hack_game = nil
+repeat
+hack_game = inputbox.inputbox("Base game folder", "Input the script base folder for this game", hack_game or hacks[id][checksum].game or "")
+if hack_game == nil then
+return
+end
+until hack_game ~= "" and path_exists(path .. hack_game .. "\\")
+local hack_data = nil
+repeat
+hack_data = inputbox.inputbox("Data folder", "Input the game's Data folder", hack_data or hacks[id][checksum].data or "")
+if hack_data == nil then
+return
+end
+until hack_data ~= "" and path_exists(path .. hack_game .. "\\" .. hack_data .. "\\")
+hacks[id][checksum].game = hack_game
+hacks[id][checksum].data = hack_data
+local file = io.open("hacks.lua", "wb")
+file:write(serpent.block(hacks, {comment=false}))
+io.close(file)
+init_script()
+end
 
 tolk = require "tolk"
 assert(package.loadlib("audio.dll", "luaopen_audio"))()
-game = nil
-language = nil
-chars = {}
-fonts = {}
-maps = {}
-sprites = {}
--- get current game and language
-if not get_game() then
-return
-end
 
-names_file = "names_" .. game .. "_" .. language .. ".lua"
-res, names = load_table(names_file)
-if res == nil then
-names = {}
-end
+memory.registerexec(0x100, init_script)
 
-counter = 0
-oldtext = "" -- last text seen
-current_item = nil
-in_keyboard = false
-tolk.output(message.translate("ready"))
+init_script()
 
 while true do
 emu.frameadvance()
-counter = counter + 1
 handle_user_actions()
+if data ~= nil then
+counter = counter + 1
 screen = get_screen()
 handle_special_cases()
 local text = table.concat(screen.lines, "")
@@ -1309,5 +1398,5 @@ read_special_variable_text()
 end
 want_read = false
 end
-
+end
 end

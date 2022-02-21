@@ -458,7 +458,7 @@ or (tileset == 0x07 and type == 0x3f)) then
 -- 		audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
 -- 	elseif type == 0x33 then
 -- 		audio.play(scriptpath .. "sounds\\s_waterfall.wav", 0, pan, vol)
-	elseif is_camera and (type == 0x13) then
+	elseif is_camera and (type == 0x13 or type == 0x43) then
 		audio.play(scriptpath .. "sounds\\s_stairup.wav", 0, pan, vol)
 	elseif is_camera and (type == 0x1b) then
 		audio.play(scriptpath .. "sounds\\s_stairdown.wav", 0, pan, vol)

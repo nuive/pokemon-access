@@ -45,6 +45,8 @@ strings = {
 ["tree"] = "Árbol",
 ["whirlpool"] = "Torbellino",
 ["waterfall"] = "Cascada",
-["unown_puzzle_tip"] = "Ordena los números, dejando a su alrededor un borde de ceros. Pulsa Start para cancelar.",
+["unown_puzzle_tip"] = "Ordena los números por filas en el interior del marco. Pulsa Start para cancelar.",
 ["unown_puzzle_pick_piece"] = "Primero tienes que elegir una pieza.",
+["frame"] = "Marco",
+["empty"] = "Vacío",
 }
