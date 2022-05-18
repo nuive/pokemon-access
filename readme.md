@@ -1,5 +1,5 @@
 # Pokémon Access
-# Version 2.5
+# Version 2.5.1
 
 ## Introduction
 
@@ -12,12 +12,10 @@ These scripts are designed to work with the VBA-ReRecording GameBoy emulator.
   
 ## Requirements and installation
 1. Download the GameBoy emulator VBA Rerecording
-http://vba-rerecording.googlecode.com/files/vba-v24m-svn-r480.7z
 
 2. Get a compatible rom. Currently, the script supports the following:
 
--Pokémon Red, Blue and Yellow: English, French, Spanish and Italian.
--Pokémon Gold, Silver and Crystal: English, Spanish and Italian.
+-Pokémon Red, Blue, Yellow, Gold, Silver and Crystal: English, French, Spanish and Italian.
 
 3. After you have the desired rom, extract and run VBA.
 
