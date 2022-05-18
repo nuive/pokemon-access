@@ -61,7 +61,6 @@ sprites = {
 [0x3c] = "Scientist",
 [0x3d] = "Kimono Girl",
 [0x3e] = "Sage",
-[0x3f] = "Unused Guy",
 [0x40] = "Gentleman",
 [0x41] = "Black Belt",
 [0x42] = "Receptionist",
