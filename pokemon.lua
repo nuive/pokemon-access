@@ -2,7 +2,8 @@ require "a-star"
 serpent = require "serpent"
 message = require "message"
 local inputbox = require "Inputbox"
-scriptpath = debug.getinfo(1, "S").source:sub(2):match("^.*\\")
+scriptpath = debug.getinfo(1, "S").source:sub(2):match("(.*[/\\])")
+callback_functions = {}
 codemap = {
 ["APS"] = "yellow",
 ["AAU"] = "gold",
@@ -967,7 +968,7 @@ end
 return results
 end
 
-function read_menu_item(tile_lines, pos)
+function read_menu_item()
 local results = generate_menu_header()
 -- we use tile_lines and not lines because of character encoding variable length
 -- however starting and ending  bytes should be removed if menu has lateral borders
@@ -980,37 +981,37 @@ if results.has_right_border then
 endpos = endpos - 1
 end
 -- Battle menu fix
-if tile_lines[3]:match(HEALTH_BAR) then
+if screen.tile_lines[3]:match(HEALTH_BAR) then
 local correctpos = nil
-if tile_lines[15]:match("\xe1\xe2\x7f") then
-correctpos = tile_lines[15]:find("\xe1\xe2\x7f") - 1
-elseif tile_lines[15]:match("\xf1") then
+if screen.tile_lines[15]:match("\xe1\xe2\x7f") then
+correctpos = screen.tile_lines[15]:find("\xe1\xe2\x7f") - 1
+elseif screen.tile_lines[15]:match("\xf1") then
 correctpos = 14
 end
 if correctpos ~= nil then
-if pos[COLUMN] < correctpos then
+if screen.menu_position[COLUMN] < correctpos then
 endpos = correctpos
 else
 startpos = correctpos
 end
 end
 end
-audio.play(scriptpath .. "sounds\\menusel.wav", 0, (200 * (pos[LINE] - 1) / #tile_lines) - 100, 30)
-local tile_line = get_menu_item(tile_lines[pos[LINE]], startpos, endpos)
+audio.play(scriptpath .. "sounds\\menusel.wav", 0, (200 * (screen.menu_position[LINE] - 1) / #screen.tile_lines) - 100, 30)
+local tile_line = get_menu_item(screen.tile_lines[screen.menu_position[LINE]], startpos, endpos)
 -- Choose Pokémon menu fix
-if pos[LINE] > results.start_y then
-local add_tileline = get_menu_item(tile_lines[pos[LINE]-1], startpos, endpos)
-if add_tileline:match("\x6e") and get_menu_item(tile_lines[results.start_y], startpos, endpos):match("\x6e") then
+if screen.menu_position[LINE] > results.start_y then
+local add_tileline = get_menu_item(screen.tile_lines[screen.menu_position[LINE]-1], startpos, endpos)
+if add_tileline:match("\x6e") and get_menu_item(screen.tile_lines[results.start_y], startpos, endpos):match("\x6e") then
 tolk.output(translate_tileline(add_tileline))
 end
 end
 tolk.output(translate_tileline(tile_line))
 -- Items and PC menu fix
-if pos[LINE] < results.end_y then
-local add_tileline = get_menu_item(tile_lines[pos[LINE]+1], startpos, endpos)
+if screen.menu_position[LINE] < results.end_y then
+local add_tileline = get_menu_item(screen.tile_lines[screen.menu_position[LINE]+1], startpos, endpos)
 if (add_tileline:match("\xf1"))
 or (add_tileline:match("\xf0"))
-or (add_tileline:match("\x6e") and not get_menu_item(tile_lines[results.start_y], startpos, endpos):match("\x6e"))
+or (add_tileline:match("\x6e") and not get_menu_item(screen.tile_lines[results.start_y], startpos, endpos):match("\x6e"))
 or (add_tileline:match("\x9c"))
 or (add_tileline:match("\x9e") and add_tileline:match("\x9f")) then
 tolk.output(translate_tileline(add_tileline))
@@ -1175,6 +1176,10 @@ end
 end
 
 function init_script()
+for _,cb_function  in pairs(callback_functions) do
+memory.registerexec(cb_function, nil)
+end
+callback_functions = {}
 commands = {
 [{"Y"}] = {read_coords, true, true};
 [{"Y", "shift"}] = {read_camera, true, true};
@@ -1388,7 +1393,7 @@ read_text(true)
 if screen.menu_position ~= nil then
 if not screen:keyboard_showing() then
 read_health_if_needed()
-read_menu_item(screen.tile_lines, screen.menu_position)
+read_menu_item()
 end
 last_menu_pos = screen.menu_position
 else

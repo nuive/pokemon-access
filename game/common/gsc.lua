@@ -554,6 +554,7 @@ camera_y = -7
 play_tile_sound(type, 0, 30, false)
 end
 end)
+table.insert(callback_functions, (ROM_FOOTSTEP_FUNCTION%0x4000)+0x4000)
 
 -- additional commands
 commands[{"D", "shift"}] = {read_holding_piece, false}

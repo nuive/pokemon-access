@@ -563,6 +563,7 @@ camera_y = -7
 play_tile_sound(type, 0, 30, false)
 end
 end)
+table.insert(callback_functions, ROM_FOOTSTEP_FUNCTION)
 
 -- initialize tables based in rom values
 ledge_tiles = get_rom_table(ROM_LEDGE_TILES, 4)
