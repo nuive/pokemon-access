@@ -3,6 +3,10 @@ HEALTH_BAR = "\x60\x61"
 HEALTH_BAR_LIMIT = 0x6b
 ENEMY_MAX_HEALTH = 2
 BOULDER_SPRITE = 0x5a
+BADGE_CUT = 2
+BADGE_SURF = 4
+BADGE_WHIRLPOOL = 7
+BADGE_WATERFALL = 8
 old_kbd_col = nil
 old_kbd_row = nil
 old_puzzle_cursor = nil
@@ -26,13 +30,13 @@ end
 return name
 end
 
-function get_inpassible_tiles()
+function get_impassable_tiles()
 local ptr = ROM_TILE_FLAGS
 for i=0x00, 0xff do
 if memory.gbromreadbyte(ptr + i ) % 0x10 ~= 0 then
-inpassible_tiles[i] = true
+impassable_tiles[i] = true
 else
-inpassible_tiles[i] = false
+impassable_tiles[i] = false
 end
 end
 end
@@ -93,11 +97,33 @@ end
 return command, count
 end
 
-function update_inpassible_tiles()
+function update_impassable_tiles()
 local ptr = ROM_TILE_FLAGS
 for i=0x00, 0xff do
-if is_cut_tile(i) or is_water_tile(i) then
-inpassible_tiles[i] = not pathfind_hm
+if is_cut_tile(i) then
+if pathfind_hm_available then
+impassable_tiles[i] = not has_badge(BADGE_CUT)
+else
+impassable_tiles[i] = not pathfind_hm_all
+end
+elseif is_water_tile(i) then
+if pathfind_hm_available then
+impassable_tiles[i] = not has_badge(BADGE_SURF)
+else
+impassable_tiles[i] = not pathfind_hm_all
+end
+elseif is_whirlpool_tile(i) then
+if pathfind_hm_available then
+impassable_tiles[i] = not has_badge(BADGE_WHIRLPOOL)
+else
+impassable_tiles[i] = not pathfind_hm_all
+end
+elseif is_waterfall_tile(i) then
+if pathfind_hm_available then
+impassable_tiles[i] = not has_badge(BADGE_WATERFALL)
+else
+impassable_tiles[i] = not pathfind_hm_all
+end
 end
 end
 end
@@ -116,7 +142,7 @@ end
 
 -- Returns true or false indicating whether we're on a map or not.
 function on_map()
-if get_map_id() == 0 or memory.readbyte(RAM_IN_BATTLE) ~= 0 or is_unown_puzzle() then
+if get_map_id() == 0 or in_battle() or is_unown_puzzle() then
 return false
 else
 return true
@@ -296,7 +322,7 @@ return collisions
 end
 
 function is_collision(collisions, y, x)
-return inpassible_tiles[collisions[y][x]]
+return impassable_tiles[collisions[y][x]]
 end
 
 function get_special_tiles_around(collisions, y, x)
@@ -393,7 +419,7 @@ elseif astar.dist_between(node, neighbor) ~= 1 then
 return false
 elseif astar.dist_between(node, neighbor) == 1 and neighbor.is_dest then
 return true
-elseif inpassible_tiles[neighbor.type] then
+elseif impassable_tiles[neighbor.type] then
 return false
 end
 return true
@@ -405,27 +431,27 @@ function play_tile_sound(type, pan, vol, is_camera)
 	or type == 0x18
 	or type == 0x1c
 	or (type >= 0x48 and type <= 0x4c) then
-		audio.play(scriptpath .. "sounds\\s_grass.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\gb\\s_grass.wav", 0, pan, vol)
 	elseif is_cut_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_cut.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\gb\\s_cut.wav", 0, pan, vol)
 	elseif type == 0x23
 	or type == 0x2b then
-		audio.play(scriptpath .. "sounds\\s_ice.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_ice.wav", 0, pan, vol)
 	elseif is_whirlpool_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_whirl.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\gb\\s_whirl.wav", 0, pan, vol)
 	elseif is_waterfall_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_waterfall.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_waterfall.wav", 0, pan, vol)
 	elseif is_water_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_water.wav", 0, pan, vol)
 	elseif (type >= 0xa0 and type < 0xb0) then
-		audio.play(scriptpath .. "sounds\\s_mad.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_mad.wav", 0, pan, vol)
 	elseif is_camera and (type >= 0x70 and type < 0x80) then
-		audio.play(scriptpath .. "sounds\\s_stair.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_stair.wav", 0, pan, vol)
 	elseif is_camera and (type == 0x60
 	or type == 0x68) then
-		audio.play(scriptpath .. "sounds\\s_hole.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_hole.wav", 0, pan, vol)
 	else
-		audio.play(scriptpath .. "sounds\\s_default.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\gb\\s_default.wav", 0, pan, vol)
 	end -- switch tile type
 end
 
@@ -557,8 +583,8 @@ end)
 table.insert(callback_functions, (ROM_FOOTSTEP_FUNCTION%0x4000)+0x4000)
 
 -- additional commands
-commands[{"D", "shift"}] = {read_holding_piece, false}
+commands[{"F", "shift"}] = {read_holding_piece, false}
 
 -- initialize tables based in rom values
-get_inpassible_tiles()
+get_impassable_tiles()
 

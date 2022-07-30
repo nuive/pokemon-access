@@ -27,6 +27,8 @@ block_move = {
 [12] = {0x31, 0x31, 0x30, 0x30}
 }
 }
+BADGE_CUT = 2
+BADGE_SURF = 5
 
 function format_names(name)
 if name:match("[player]") then
@@ -38,25 +40,33 @@ end
 return name
 end
 
-function update_inpassible_tiles()
+function update_impassable_tiles()
 for i=0x00, 0xff do
 if is_cut_tile(i) then
-inpassible_tiles[i] = not pathfind_hm
-elseif is_water_tile(i) then
-inpassible_tiles[i] = not pathfind_hm
+if pathfind_hm_available then
+impassable_tiles[i] = not has_badge(BADGE_CUT)
 else
-inpassible_tiles[i] = true
+impassable_tiles[i] = not pathfind_hm_all
+end
+elseif is_water_tile(i) then
+if pathfind_hm_available then
+impassable_tiles[i] = not has_badge(BADGE_SURF)
+else
+impassable_tiles[i] = not pathfind_hm_all
+end
+else
+impassable_tiles[i] = true
 end
 end
-	local ptr = memory.readword(RAM_PASSIBLE_TILES)
+	local ptr = memory.readword(RAM_PASSABLE_TILES)
 while memory.gbromreadbyte(ptr) ~= 0xff do
-inpassible_tiles[memory.gbromreadbyte(ptr)] = false
+impassable_tiles[memory.gbromreadbyte(ptr)] = false
 ptr = ptr + 1
 end
 end
 
 function check_talking_over(tile)
-ptr = RAM_PASSIBLE_TILES+2
+ptr = RAM_PASSABLE_TILES+2
 while ptr < RAM_GRASS_TILE and memory.readbyte(ptr) ~= 0xff do
 if tile == memory.readbyte(ptr) then
 return true
@@ -74,7 +84,7 @@ end
 function on_map()
 local mapnumber = get_map_id()
 local textbox_top, textbox_bottom = get_textbox_border(5)
-if mapnumber == 0xff or memory.readbyte(RAM_IN_BATTLE) ~= 0 then
+if mapnumber == 0xff or in_battle() then
 return false
 elseif screen.tile_lines[6]:find(textbox_top) and screen.tile_lines[12]:find(textbox_bottom) then
 return false
@@ -215,6 +225,8 @@ table.insert(results, {name=message.translate("statue"), x=x, y=y, id="statue_" 
 -- special cinnabar gym
 elseif (mapid == 0xa6 and tileset_number == 0x16 and (collisions[y][x] == 0x4c and collisions[y][x-1] ~= 0x4c and collisions[y][x+2] ~= 0x4c)) then
 table.insert(results, {name=message.translate("quiz"), x=x, y=y, id="quiz_" .. y .. x, type="object", ignorable=true})
+elseif tileset_number == 0x11 and collisions[y][x] == 0x2d then
+table.insert(results, {name=message.translate("boulder_switch"), x=x, y=y, id="switch_" .. y .. x, type="object", ignorable=true})
 end
 end
 end
@@ -271,7 +283,7 @@ add_collision(x*2+1, y*2+1, memory.gbromreadbyte(ptr+(4*3)+2))
 end -- x
 end -- y
 
-update_inpassible_tiles()
+update_impassable_tiles()
 return collisions
 end
 
@@ -306,7 +318,7 @@ memory.gbromreadbyte(ptr+(tile_y*8)+(tile_x*2)+5)
 end
 
 function is_collision(collisions, y, x)
-return inpassible_tiles[collisions[y][x]]
+return impassable_tiles[collisions[y][x]]
 or check_collision_pair(memory.readbyte(RAM_MAP_HEADER), last_camera_tile, collisions[y][x])
 end
 
@@ -425,7 +437,7 @@ elseif astar.dist_between(node, neighbor) ~= 1 then
 return false
 elseif astar.dist_between(node, neighbor) == 1 and neighbor.is_dest then
 return true
-elseif inpassible_tiles[neighbor.type] then
+elseif impassable_tiles[neighbor.type] then
 return false
 end
 return true
@@ -434,40 +446,32 @@ end -- valid
 function play_tile_sound(type, pan, vol, is_camera)
 local tileset = memory.readbyte(RAM_MAP_HEADER)
 	if type == memory.readbyte(RAM_GRASS_TILE) then
-		audio.play(scriptpath .. "sounds\\s_grass.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\gb\\s_grass.wav", 0, pan, vol)
 	elseif is_cut_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_cut.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\gb\\s_cut.wav", 0, pan, vol)
 	elseif is_water_tile(type) then
-		audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_water.wav", 0, pan, vol)
 	elseif is_block_arrow(tileset, DOWN) then
-		audio.play(scriptpath .. "sounds\\s_move_down.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_move_down.wav", 0, pan, vol)
 elseif is_block_arrow(tileset, UP) then
-		audio.play(scriptpath .. "sounds\\s_move_up.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_move_up.wav", 0, pan, vol)
 elseif is_block_arrow(tileset, LEFT) then
-		audio.play(scriptpath .. "sounds\\s_move.wav", 0, -100, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_move.wav", 0, -100, vol)
 elseif is_block_arrow(tileset, RIGHT) then
-		audio.play(scriptpath .. "sounds\\s_move.wav", 0, 100, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_move.wav", 0, 100, vol)
 elseif is_camera and ((tileset == 0x16 and type == 0x5e)
 or (tileset == 0x07 and type == 0x3f)) then
-		audio.play(scriptpath .. "sounds\\no_pass.wav", 0, pan, vol)
--- 	elseif type == 0x23 then
--- 		audio.play(scriptpath .. "sounds\\s_ice.wav", 0, pan, vol)
--- 	elseif type == 0x24 then
--- 		audio.play(scriptpath .. "sounds\\s_whirl.wav", 0, pan, vol)
--- 	elseif type == 0x29 then
--- 		audio.play(scriptpath .. "sounds\\s_water.wav", 0, pan, vol)
--- 	elseif type == 0x33 then
--- 		audio.play(scriptpath .. "sounds\\s_waterfall.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\no_pass.wav", 0, pan, vol)
 	elseif is_camera and (type == 0x13 or type == 0x43) then
-		audio.play(scriptpath .. "sounds\\s_stairup.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_stairup.wav", 0, pan, vol)
 	elseif is_camera and (type == 0x1b) then
-		audio.play(scriptpath .. "sounds\\s_stairdown.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_stairdown.wav", 0, pan, vol)
 	elseif is_camera and tileset == 0x11 and type == 0x22 then
-		audio.play(scriptpath .. "sounds\\s_hole.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_hole.wav", 0, pan, vol)
 	elseif is_camera and tileset == 0x11 and type == 0x2d then
-		audio.play(scriptpath .. "sounds\\s_switch.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\common\\s_switch.wav", 0, pan, vol)
 	else
-		audio.play(scriptpath .. "sounds\\s_default.wav", 0, pan, vol)
+		audio.play(scriptpath .. "sounds\\gb\\s_default.wav", 0, pan, vol)
 	end -- switch tile type
 local x, y = nil
 if is_camera then
@@ -477,7 +481,7 @@ x, y = get_player_xy()
 end
 
 if check_preledge(get_map_collisions(), y, x) then
-audio.play(scriptpath .. "sounds\\s_mad.wav", 0, pan, vol)
+audio.play(scriptpath .. "sounds\\common\\s_mad.wav", 0, pan, vol)
 end
 end
 
