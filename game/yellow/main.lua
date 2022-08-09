@@ -1,3 +1,4 @@
+MAX_TILESETS = 25
 BOULDER_SPRITE = 0x49
 
 function is_water_tile(tile)
@@ -19,3 +20,5 @@ return false
 end
 
 water_tiles = get_rom_table(ROM_WATER_TILESETS + 10, 1)
+
+get_warp_tiles()

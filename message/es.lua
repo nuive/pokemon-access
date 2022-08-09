@@ -55,8 +55,9 @@ strings = {
 ["keyboard_ok"] = "Aceptar",
 ["thin_ice"] = "Hielo quebradizo",
 ["cracked_ice"] = "Hielo quebrado",
-["boulder_switch"] = "Interruptor para Piedra",
+["switch"] = "Interruptor",
 ["not_in_battle"] = "No estás combatiendo",
 ["power"] = "Potencia",
 ["accuracy"] = "Precisión",
+["hole"] = "Agujero",
 }

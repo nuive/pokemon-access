@@ -219,6 +219,5 @@ maps = {
   [237] = "Silph S.A.",
   [245] = "Meseta Añil",
   [246] = "Meseta Añil",
-  [247] = "Meseta Añil",
-  [248] = "Casa de la Playa"
+  [247] = "Meseta Añil"
 }

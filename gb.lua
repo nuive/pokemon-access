@@ -1,5 +1,5 @@
 ROM_TITLE_ADDRESS = 0x134
-ROM_GAMECODE_START = 12
+ROM_GAMECODE_START = 11
 REQUIRED_FILES = {"chars.lua", "fonts.lua", "memory.lua"}
 codemap = {
 ["APS"] = "yellow",
@@ -14,11 +14,13 @@ game_checksum = {
 [0x384a] = "es",
 [0x7afc] = "fr",
 [0x89d2] = "it",
+[0x5cdc] = "de",
 -- blue
 [0x9d0a] = "en",
 [0x14d7] = "es",
 [0x56a4] = "fr",
 [0x5e9c] = "it",
+[0x2ebc] = "de",
 },
 ["yellow"] = {
 [0x047c] = "en",
@@ -172,8 +174,9 @@ tolk.output(s)
 end
 
 function check_coordinates_on_screen(x, y)
+local width, height = get_map_dimensions()
 if x >= -6 and y >= -6
-and x <= memory.readbyte(RAM_MAP_WIDTH)*2 + 5 and y <= memory.readbyte(RAM_MAP_HEIGHT)*2 + 5 then
+and x <= width *2 + 5 and y <= height *2 + 5 then
 return true
 end
 return false
@@ -185,13 +188,13 @@ while memory.gbromreadbyte(ptr) ~= 0xff do
 if dimension > 1 then
 local row = {}
 for i = 0, dimension - 1 do
-table.insert(row, memory.gbromreadbyte(ptr+i))
+table.insert(row, memory.gbromreadbyte(ptr +i))
 end
 table.insert(results, row)
 else
 table.insert(results, memory.gbromreadbyte(ptr))
 end
-ptr = ptr + dimension
+ptr = ptr +dimension
 end
 return results
 end
@@ -254,8 +257,7 @@ end
 
 function get_map_blocks()
 -- map width, height in blocks
-local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
-local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
+local width, height = get_map_dimensions()
 local row_width = width+6 -- including border
 ptr = RAM_OVERWORLD_MAP -- start of overworld
 -- there is a border of 3 blocks on each edge of the map.
@@ -271,8 +273,7 @@ return blocks
 end
 
 function get_connection_limits(address, size, dir)
-local height = memory.readbyte(RAM_MAP_HEIGHT)
-local width = memory.readbyte(RAM_MAP_WIDTH)
+local width, height = get_map_dimensions()
 local row_width = width + 6
 address = address - RAM_OVERWORLD_MAP
 local start_y = (math.floor(address / row_width) - 3) * 2
@@ -349,7 +350,7 @@ break
 end
 end
 else
-path = find_path_to_xy(obj.x, obj.y, true)
+path = find_path_to_xy(obj.x, obj.y)
 end
 if path == nil then
 tolk.output(message.translate("no_path"))
@@ -365,7 +366,7 @@ end
 return false
 end
 
-function find_path_to_xy(dest_x, dest_y, search)
+function find_path_to_xy(dest_x, dest_y)
 local player_x, player_y = get_player_xy()
 local collisions = get_map_collisions()
 local allnodes = {}
@@ -622,15 +623,29 @@ return message.translate("unknown")
 end
 
 function get_player_xy()
+local width, height = get_map_dimensions()
 local x = memory.readbyte(RAM_PLAYER_X)
 local y = memory.readbyte(RAM_PLAYER_Y)
-if x > memory.readbyte(RAM_MAP_WIDTH) * 2 then
+if x > width *2 then
 x = -1
 end
-if y > memory.readbyte(RAM_MAP_HEIGHT) * 2 then
+if y > height *2 then
 y = -1
 end
 return x, y
+end
+
+function get_map_dimensions()
+return memory.readbyteunsigned(RAM_MAP_WIDTH), memory.readbyteunsigned(RAM_MAP_HEIGHT)
+end
+
+function on_map_limit(x, y)
+local width, height = get_map_dimensions()
+if x == 0 or x == width *2 -1
+or y == 0 or y == height *2 -1 then
+return true
+end
+return false
 end
 
 function get_game_checksum()

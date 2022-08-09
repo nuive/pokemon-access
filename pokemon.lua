@@ -9,6 +9,7 @@ langmap = {
 ["E"] = "en",
 ["F"] = "fr",
 ["I"] = "it",
+["PB"] = "pt-br",
 ["S"] = "es",
 }
 pathfind_hm_available = false
@@ -301,6 +302,15 @@ function camera_move_down_ignore_wall()
 	camera_move(1, 0, false)
 end
 
+function find_path_to_camera()
+path = find_path_to_xy(get_camera_xy())
+if path == nil then
+tolk.output(message.translate("no_path"))
+return
+end
+speak_path(clean_path(path))
+end
+
 function contains(table, key)
 for _, v in pairs(table) do
 if v == key then
@@ -445,7 +455,7 @@ local last = path[i-1]
 local command = ""
 local count = 1
 if pathfind_hm_available or pathfind_hm_all then
-command, count = get_hm_command(node.type, last.type)
+command, count = get_hm_command(node, last)
 end
 if command ~= "" then
 command = command .. string.format(" %s ", message.translate("on_way"))
@@ -598,12 +608,12 @@ end
 end
 
 function init_script()
-device = get_device()
-loadfile(scriptpath .. device .. ".lua")()
 for _,cb_function  in pairs(callback_functions) do
 memory.registerexec(cb_function, nil)
 end
 callback_functions = {}
+device = get_device()
+loadfile(scriptpath .. device .. ".lua")()
 commands = {
 [{"Y"}] = {read_coords, true, true};
 [{"Y", "shift"}] = {read_camera, true, true};
@@ -626,6 +636,7 @@ commands = {
 [{"G", "shift"}] = {camera_move_right_ignore_wall, true, true},
 [{"R", "shift"}] = {camera_move_up_ignore_wall, true, true},
 [{"V", "shift"}] = {camera_move_down_ignore_wall, true, true},
+[{"F", "shift"}] = {find_path_to_camera, true, true};
 [{"H"}] = {read_enemy_health, true, false},
 [{"H", "shift"}] = {read_player_health, true, false},
 [{"0", "shift"}] = {add_hackrom_values, false, false},
@@ -678,10 +689,10 @@ function get_game()
 local valid = false
 local game_title = memory.readbyterange(ROM_TITLE_ADDRESS, 16)
 local code = ""
-for i = 0, 2 do
+for i = 1, 3 do
 code = code .. string.char(game_title[ROM_GAMECODE_START +i])
 end
-local lang = string.char(game_title[ROM_GAMECODE_START +3])
+local lang = string.char(game_title[ROM_GAMECODE_START +4])
 local checksum = get_game_checksum()
 if codemap[code] then
 game = codemap[code]
@@ -751,7 +762,7 @@ local id = nil
 if game == nil then
 id = ""
 for i = 0, 3 do
-id = id .. string.char(memory.readbyte(ROM_TITLE_ADDRES +ROM_GAMECODE_START +i))
+id = id .. string.char(memory.readbyte(ROM_TITLE_ADDRESS +ROM_GAMECODE_START +i))
 end
 elseif base_game ~= nil then
 id = base_game

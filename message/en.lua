@@ -55,8 +55,9 @@ strings = {
 ["keyboard_ok"] = "OK",
 ["thin_ice"] = "Thin Ice",
 ["cracked_ice"] = "Cracked Ice",
-["boulder_switch"] = "Boulder Switch",
+["switch"] = "Switch",
 ["not_in_battle"] = "Not in battle",
 ["power"] = "Power",
 ["accuracy"] = "Accuracy",
+["hole"] = "Hole",
 }

@@ -1,5 +1,5 @@
 # Pokémon Access
-# Version 3.0
+# Version 3.0.1
 
 ## Introduction
 
@@ -13,11 +13,12 @@ The goal of this project is to extend this functionality throughout all the Poké
 These scripts are designed to work with the VBA-ReRecording GameBoy emulator.
   
 ## Requirements and installation
-1. Download the GameBoy emulator VBA Rerecording from https://mega.nz/file/hsEygYQZ#o5b7DcHqWVWaAgCVqUN3RP5ubzi1yI99dDnPakqSp5E
+1. Download the GameBoy emulator VBA Rerecording from https://mega.nz/file/ogEV1LZI#GgOG9ayodsIO7tbwBCNlQI8YenvsL_pnf-FSJC8m5S4
 
 2. Get a compatible rom. Currently, the script supports the following:
 
--Pokémon Red, Blue, Yellow, Gold, Silver and Crystal: English, French, Spanish and Italian.
+-Pokémon Red, Blue and Yellow: : English, French, German, Italian and Spanish.
+-Pokémon Gold, Silver and Crystal: English, French, Italian, Spanish and Brazilian Portuguese (crystal only).
 -Pokémon Fire Red and Leaf Green: English (version 1.0) and Spanish.
 
 3. After you have the desired rom, extract and run VBA.
@@ -60,9 +61,10 @@ Make sure num lock is off while playing the game, or the keys won't work.
 * f - move the camera to the player's position
 * add shift to d/g/r/v to move the camera, ignoring walls
 * Shift + y - read current camera position
+* shift+f - pathfind to camera position
 
 ### Gold/SILVER/Crystal exclusive keys
-* shift+f - say which piece you are holding (on the unown puzzles)
+* shift+e - say which piece you are holding (on the unown puzzles)
 
 ## HackRom support
 Current version of the script has extended support for hackroms of the games previously mentioned.
@@ -99,4 +101,5 @@ Original source code: https://github.com/tspivey/pokecrystal-access
 ### Additional contributors
 -ambro86 for the italian translations.
 -pika-san for the french translations.
+-janagirl for the german translations.
 

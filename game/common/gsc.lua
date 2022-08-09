@@ -72,25 +72,25 @@ return false
 end
 end
 
-function get_hm_command(tile, last)
+function get_hm_command(node, last)
 local command = ""
 local count = true
-if is_cut_tile(tile) then
+if is_cut_tile(node.type) then
 command = message.translate("bush")
-elseif is_whirlpool_tile(tile) then
+elseif is_whirlpool_tile(node.type) then
 command = message.translate("whirlpool")
-elseif is_waterfall_tile(tile) then
-if is_waterfall_tile(last) then
+elseif is_waterfall_tile(node.type) then
+if is_waterfall_tile(last.type) then
 command = "$ignore"
 else
 command = message.translate("waterfall")
 end
-elseif is_water_tile(tile) and is_waterfall_tile(last) then
+elseif is_water_tile(node.type) and is_waterfall_tile(last.type) then
 command = "$ignore"
-elseif is_water_tile(tile) and not is_water_tile(last) and last ~= 0xff then
+elseif is_water_tile(node.type) and not is_water_tile(last.type) and last.type ~= 0xff then
 command = message.translate("enter_water")
 count = false
-elseif not is_water_tile(tile) and is_water_tile(last) and tile ~= 0xff then
+elseif not is_water_tile(node.type) and is_water_tile(last.type) and node.type ~= 0xff then
 command = message.translate("exit_water")
 count = false
 end
@@ -149,18 +149,36 @@ return true
 end
 end
 
+function is_warp_tile(tile)
+if bit.band(tile, 0xF0) == 0x70 then
+return true
+end
+
+return false
+end
+
+function is_hole(tile)
+if tile == 0x60 or tile == 0x68 then
+return true
+end
+
+return false
+end
+
 function get_warps()
 local current_mapid = get_map_id()
 local eventstart = memory.readword(RAM_MAP_EVENT_HEADER_POINTER)
 local bank = memory.readbyte(RAM_MAP_SCRIPT_HEADER_BANK)
 eventstart = ((bank - 1)*16384) + eventstart
 local warps = memory.gbromreadbyte(eventstart+2)
+local collisions = get_map_collisions()
 local results = {}
 local warp_table_start = eventstart+3
 for i = 1, warps do
 local start = warp_table_start+(5*(i-1))
 local warpy = memory.gbromreadbyte(start)
 local warpx = memory.gbromreadbyte(start+1)
+if is_warp_tile(collisions[warpy][warpx]) then
 local mapid = memory.gbromreadbyte(start+3)*256+memory.gbromreadbyte(start+4)
 local name = message.translate("warp") .. i
 local mapname = get_map_name(mapid)
@@ -170,6 +188,9 @@ end
 local warp = {x=warpx, y=warpy, name=name, type="warp", id="warp_" .. i}
 warp.name = get_name(current_mapid, warp)
 table.insert(results, warp)
+elseif is_hole(collisions[warpy][warpx]) then
+table.insert(results, {name=message.translate("hole"), x=warpx, y=warpy, id="hole_" .. warpy .. warpx, type="object"})
+end
 end
 return results
 end
@@ -205,8 +226,7 @@ function get_objects()
 local ptr = RAM_MAP_OBJECTS+16 -- skip the player
 local liveptr = RAM_LIVE_OBJECTS -- live objects
 local results = {}
-local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
-local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
+local width, height = get_map_dimensions()
 local mapid = get_map_id()
 for i = 1, 15 do
 local sprite = memory.readbyte(ptr+0x01)
@@ -401,7 +421,7 @@ end
 return false
 end
 
-valid_path = function (node, neighbor)
+function valid_path(node, neighbor)
 for dir = DOWN, RIGHT, 4 do
 local dir_x, dir_y = decode_direction(dir)
 dir_x = dir_x + dir_x
@@ -447,8 +467,7 @@ function play_tile_sound(type, pan, vol, is_camera)
 		audio.play(scriptpath .. "sounds\\common\\s_mad.wav", 0, pan, vol)
 	elseif is_camera and (type >= 0x70 and type < 0x80) then
 		audio.play(scriptpath .. "sounds\\common\\s_stair.wav", 0, pan, vol)
-	elseif is_camera and (type == 0x60
-	or type == 0x68) then
+	elseif is_camera and is_hole(type) then
 		audio.play(scriptpath .. "sounds\\common\\s_hole.wav", 0, pan, vol)
 	else
 		audio.play(scriptpath .. "sounds\\gb\\s_default.wav", 0, pan, vol)
@@ -583,7 +602,7 @@ end)
 table.insert(callback_functions, (ROM_FOOTSTEP_FUNCTION%0x4000)+0x4000)
 
 -- additional commands
-commands[{"F", "shift"}] = {read_holding_piece, false}
+commands[{"E", "shift"}] = {read_holding_piece, false}
 
 -- initialize tables based in rom values
 get_impassable_tiles()

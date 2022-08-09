@@ -219,7 +219,6 @@ maps = {
   [237] = "Sylphe SARL",
   [245] = "Indigo Plateau",
   [246] = "Indigo Plateau",
-  [247] = "Indigo Plateau",
-  [248] = "Beach House"
+  [247] = "Indigo Plateau"
 }
 

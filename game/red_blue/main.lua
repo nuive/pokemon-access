@@ -1,3 +1,4 @@
+MAX_TILESETS = 24
 BOULDER_SPRITE = 0x3f
 
 function is_water_tile(tile)
@@ -19,3 +20,5 @@ return false
 end
 
 water_tiles = {0x48, 0x32, 0x14}
+
+get_warp_tiles()

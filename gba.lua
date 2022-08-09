@@ -1,10 +1,10 @@
 ROM_TITLE_ADDRESS = 0x80000A0
-ROM_GAMECODE_START = 13
+ROM_GAMECODE_START = 12
 REQUIRED_FILES = {"chars.lua", "memory.lua"}
 codemap = {
 ["BPR"] = "firered",
 ["BPG"] = "leafgreen",
-["BPE"] = "emerald",
+-- ["BPE"] = "emerald",
 }
 CHAR_NAME_END = 0xFF
 DOWN = 1
@@ -42,6 +42,8 @@ TEXTBOX_BORDER = {
 "\x00\x08\x00\x09\x00\x09\x00\x0A",
 "\x00\x02\x00\x03\x00\x03\x00\x04",
 "\x00\x08\x00\x09\x00\x09\x00\x0A",
+"\x00\x30\x00\x31\x00\x32\x00\x33\x00\x34",
+"\x00\x36\x00\x37\x00\x38\x00\x39\x00\x3a",
 "\x00\x4f\x00\x50\x00\x50\x00\x51",
 "\x00\x55\x00\x56\x00\x56\x00\x57",
 "\x00\x58\x00\x59\x00\x59\x00\x5A",
@@ -54,7 +56,6 @@ TEXTBOX_BORDER = {
 "\x03\xA9\x03\xAA\x03\xAA\x03\xAB",
 "\x03\xC0\x03\xC1\x03\xC1\x03\xC2",
 "\x03\xC6\x03\xC7\x03\xC7\x03\xC8",
--- "\x00\x30\x00\x31\x00\x32\x00\x33\x00\x34",
 }
 
 KEYBOARD_KEYS = {
@@ -178,6 +179,11 @@ copy_window_to_screen(get_window(window))
 end
 
 function blit_bitmap_rect_to_window()
+if ignore_bitmap then
+ignore_bitmap = false
+return
+end
+
 local id = memory.getregister("r0")
 if not text_window[id] then
 return
@@ -192,6 +198,19 @@ for j = left, (left + (width -1)) do
 text_window[window.id][i+j] = 0xFF
 end
 end
+end
+
+function blit_move_info_icon()
+local window = get_window(memory.getregister("r0"))
+if not window.data then
+return
+end
+
+local type = memory.getregister("r1")
+local x = memory.getregister("r2")
+local y = memory.getregister("r3") +8
+window.data[y *window.width +x] = bit.bor(type, 0xFB00)
+ignore_bitmap = true
 end
 
 function scroll_window()
@@ -230,20 +249,36 @@ end
 
 function get_window_tilelines(window)
 if not window.data then
-return
+return {}
 end
 local tile_lines = {}
 for i = 0, (window.width * window.height)-1, window.width do
 local tile_line = ""
 for j = 0, window.width-1 do
 local char = window.data[i+j]
+if char ~= nil then
 if char > 0xFF then
 tile_line = tile_line .. string.char(bit.rshift(char, 8)) .. string.char(char % 0x100)
 else
 tile_line = tile_line .. string.char(char)
 end
+else
+tile_line = tile_line .. string.char(0xFF)
+end
 end
 table.insert(tile_lines, tile_line)
+end
+return tile_lines
+end
+
+function get_window_tilelines_from_screen(window)
+if not window.data then
+return {}
+end
+local screen_tilelines = get_window_screen().tile_lines
+local tile_lines = {}
+for i = window.top +1, window.top +window.height do
+table.insert(tile_lines, screen_tilelines[i]:sub(window.left +1, window.left +window.width))
 end
 return tile_lines
 end
@@ -324,10 +359,13 @@ end
 end
 end
 
-function create_window(bg, left, top, width, height)
+function create_window(bg, left, top, width, height, fill)
+if not fill then
+fill = 0xFE
+end
 local window = {}
 for i = 0, (width * height) -1 do
-window[i] = 0xFE
+window[i] = fill
 end
 return {
 bg=bg,
@@ -607,12 +645,16 @@ end
 
 function draw_text_to_tile_buffer()
 local window = get_last_window()
-if window == nil or text_window[window] == nil then
+if window == nil then
 return
 end
 
 window = get_window(window)
-tmp_sheet = create_window(4, 0, 0, 192, 8)
+if window.data == nil then
+return
+end
+
+tmp_sheet = create_window(4, 0, 0, 384, 8)
 
 local size = memory.getregister("r0")
 
@@ -652,6 +694,10 @@ end
 end
 
 function copy_window_to_sprite_tiles(window, source_data, dest_data, line_start, sprite_width, copy_width, copy_height)
+if window.data == nil then
+return
+end
+
 source_data = source_data - window.data_address
 dest_data = bit.band(dest_data, 0xFFFF)
 
@@ -669,7 +715,7 @@ end
 
 function add_healthbox_text()
 local window = get_last_window()
-if window == nil or text_window[window] == nil then
+if window == nil then
 return
 end
 
@@ -678,16 +724,49 @@ end
 
 function safari_add_healthbox_text()
 local window = get_last_window()
-if window == nil or text_window[window] == nil then
+if window == nil then
 return
 end
 
 copy_window_to_sprite_tiles(get_window(window), memory.getregister("r1"), memory.getregister("r0"), 0, 64, memory.getregister("r2") *8, 16)
 end
 
+function show_status_in_healthbox()
+local window = create_window(nil, 0, 0, 32, 8, 0xFF)
+
+local status = memory.getregister("r4")
+local fill = 0xFF
+if bit.band(status, 0x07) ~= 0 then
+fill = 0xFC03
+elseif bit.band(status, 0x88) ~= 0 then
+fill = 0xFC01
+elseif bit.band(status, 0x10) ~= 0 then
+fill = 0xFC05
+elseif bit.band(status, 0x20) ~= 0 then
+fill = 0xFC04
+elseif bit.band(status, 0x40) ~= 0 then
+fill = 0xFC02
+end
+
+local line = window.width *4
+window.data[line] = fill
+
+local dest_data = (sprite_tile_num(memory.getregister("r9")) +memory.getregister("r8")) *32
+copy_window_to_sprite_tiles(window, 0, dest_data, 0, 32, 24, 8)
+end
+
+function show_status_in_summary()
+tmp_sheet = create_window(nil, 0, 0, 256, 8, 0xFF)
+
+local line = tmp_sheet.width *4
+for i = 1, 7 do
+tmp_sheet.data[line +32 *(i -1) +4] = 0xFC00 +i
+end
+end
+
 function print_box_data_to_sprite()
 local window = get_last_window()
-if window == nil or text_window[window] == nil then
+if window == nil then
 return
 end
 
@@ -726,7 +805,6 @@ function clear_all_bg_screens()
 for i = 0, 3 do
 clear_bg_screen(i)
 end
-fake_textbox = nil
 end
 
 function clear_screen_areas()
@@ -866,8 +944,13 @@ end
 return trim(l)
 end
 
-function read_window(window)
-local tilelines = get_window_tilelines(window)
+function read_window(window, from_screen)
+local tilelines
+if from_screen then
+tilelines = get_window_tilelines_from_screen(window)
+else
+tilelines = get_window_tilelines(window)
+end
 for _, tileline in pairs(tilelines) do
 local line = translate_tileline(tileline)
 if line ~= "" then
@@ -884,6 +967,7 @@ end
 local left = memory.getregister("r3")
 local position = memory.readword(memory.getregister("r13")) +9
 local tiles = get_window_tilelines(get_window(window))
+if tiles[position] then
 local item = ""
 if grid then
 local width = memory.readbyte(RAM_MENU + 7)
@@ -892,6 +976,7 @@ else
 item = translate_tileline(tiles[position]:sub(left))
 end
 tolk.output(item)
+end
 end
 
 function read_mainmenu_item()
@@ -908,7 +993,9 @@ end
 local left = memory.getregister("r2")
 local top = memory.getregister("r3") +9
 local tiles = get_window_tilelines(get_window(window))
+if tiles[top] then
 tolk.output(translate_tileline(tiles[top]:sub(left)))
+end
 end
 
 function draw_menu_cursor()
@@ -949,8 +1036,9 @@ option = 2
 else
 option = 0
 end
-if lines then
-tolk.output(translate_tileline(lines[11 + option*8]:sub(startpos, endpos)))
+local position = 11 + option*8
+if lines[position] then
+tolk.output(translate_tileline(lines[position]:sub(startpos, endpos)))
 end
 end
 
@@ -961,14 +1049,17 @@ return
 end
 local position = (memory.getregister("r3") -9) *8 +11
 local tiles = get_window_tilelines(get_window(window))
+if tiles[position] then
 tolk.output(translate_tileline(tiles[position]))
+end
 end
 
 function read_battle_move_menu_item()
 local move = memory.getregister("r0")
 local lines = get_window_tilelines(get_window(move + 3))
-if lines then
-tolk.output(translate_tileline(lines[10]))
+local top = 10
+if lines[top] then
+tolk.output(translate_tileline(lines[top]))
 end
 end
 
@@ -985,7 +1076,7 @@ if not text_window[id] then
 return
 end
 if memory.getregister("r1") == 1 then
-read_window(get_window(id))
+read_window(get_window(id), true)
 end
 end
 
@@ -993,24 +1084,59 @@ function read_how_many()
 tolk.output(tostring(memory.getregister("r1")))
 end
 
-function read_move_menu_item()
-local move = memory.readbyte(RAM_SELECTED_MOVE)
-local lines = get_window_tilelines(get_window(3))
-if lines then
-local index = 14 +28 *move
-tolk.output(translate_tileline(lines[index]))
-local pp = translate_tileline(lines[index +11])
+function read_tm_case_info()
+local lines = get_window_screen().tile_lines
+if lines[113] then
+local type = translate_tileline(lines[113])
+if type ~= "" then
+tolk.output(type)
+end
+end
+if lines[125] then
+local power = translate_tileline(lines[125])
+if power ~= "" then
+tolk.output(power)
+end
+end
+if lines[137] then
+local accuracy = translate_tileline(lines[137])
+if accuracy ~= "" then
+tolk.output(accuracy)
+end
+end
+if lines[149] then
+pp = translate_tileline(lines[149])
 if pp ~= "" then
 tolk.output(pp)
 end
+end
+end
+
+function read_move_menu_item()
+local move = memory.readbyte(RAM_SELECTED_MOVE)
+local lines = get_window_tilelines(get_window(3))
+local index = 14 +28 *move
+if lines[index] then
+tolk.output(translate_tileline(lines[index]))
+local pp = index +11
+if lines[pp] then
+pp = translate_tileline(lines[index +11])
+if pp ~= "" then
+tolk.output(pp)
+end
+end
 lines = get_window_tilelines(get_window(4))
+if lines[10] then
 local power = translate_tileline(lines[10])
 if power ~= "" then
 tolk.output(string.format(message.translate("power") .. " %s", power))
 end
+end
+if lines[24] then
 local accuracy = translate_tileline(lines[24])
 if accuracy ~= "" then
 tolk.output(string.format(message.translate("accuracy") .. " %s", accuracy))
+end
 end
 end
 end
@@ -1060,12 +1186,20 @@ elseif check_window_present(WINDOW_BAG) or check_window_present(WINDOW_PC_BAG) o
 set_fake_textbox(13)
 elseif check_window_present(WINDOW_MOVE_LIST, 3) then
 set_fake_textbox(11, 0, 15)
+elseif check_window_present(WINDOW_TM_CASE) then
+if not window_is_empty(get_window(6)) then
+set_fake_textbox(14)
+else
+set_fake_textbox(11, 12, 30)
+end
 elseif check_window_present(WINDOW_NEWGAME_HELP1, 2) then
 set_fake_textbox(6)
 elseif check_window_present(WINDOW_NEWGAME_HELP2, 2) or check_window_present(WINDOW_NEWGAME_HELP3, 2) then
 set_fake_textbox(2)
 elseif check_window_present(WINDOW_NEWGAME_INTRO, 2, 1) then
 set_fake_textbox(3)
+elseif check_window_present(WINDOW_TV) then
+set_fake_textbox(14)
 else
 fake_textbox = nil
 end
@@ -1088,10 +1222,13 @@ else
 text_window[window.id][char_y*window.width+char_x] = current_char
 end
 if current_char > 0xF7 then
-text_window[window.id][char_y*window.width+char_x] = text_window[window.id][char_y*window.width+char_x] * 0x100 + memory.readbyte(memory.getregister("r0") + 1)
+text_window[window.id][char_y*window.width+char_x] = current_char *0x100 +memory.readbyte(memory.getregister("r0") + 1)
 end
 unread_text = true
-elseif current_char == 0xFA or current_char == 0xFB or current_char == 0xFC or current_char == 0xFF then
+elseif current_char == 0xFA
+or current_char == 0xFB
+or (current_char == 0xFC and memory.readbyte(memory.getregister("r0") + 1) == 9)
+or current_char == 0xFF then
 if unread_text then
 want_read = true
 unread_text = false
@@ -1122,16 +1259,37 @@ end
 return name
 end
 
+function is_warp_tile(tile)
+if (tile >= 0x60 and tile <= 0x65)
+or tile == 0x67
+or (tile >= 0x69 and tile <= 0x6F)
+or tile == 0x71 then
+return true
+end
+return false
+end
+
+function is_hole(tile)
+if tile == 0x29
+or tile == 0x66
+or tile == 0x68 then
+return true
+end
+return false
+end
+
 function get_warps()
 local current_mapid = get_map_id()
 local eventstart = memory.readdword(RAM_MAP_EVENT_HEADER_POINTER)
 local warps = memory.readbyte(eventstart+1)
+local types = get_blocks_type()
 local results = {}
 local ptr = memory.readdword(eventstart+8)
 for i = 1, warps do
 local x = memory.readword(ptr)
 local y = memory.readword(ptr + 2)
 if check_coordinates_on_screen(x, y) then
+if is_warp_tile(types[y][x]) then
 local mapid = memory.readbyte(ptr + 7)*256+memory.readbyte(ptr + 6)
 local name = "Warp " .. i
 local mapname = get_map_name(mapid)
@@ -1141,6 +1299,9 @@ end
 local warp = {x=x, y=y, name=name, type="warp", id="warp_" .. i}
 warp.name = get_name(current_mapid, warp)
 table.insert(results, warp)
+elseif is_hole(types[y][x]) then
+table.insert(results, {name=message.translate("hole"), x=x, y=y, id="hole_" .. y .. x, type="object"})
+end
 end
 ptr = ptr + 8
 end
@@ -1176,7 +1337,7 @@ local ptr = memory.readdword(RAM_SAVEBLOCK1_POINTER)+RAM_MAP_OBJECTS
 local results = {}
 for i = 1, objects do
 local vissible = true
-local flag = memory.readword(ptr+20)
+local flag = memory.readword(ptr+20), 0x3FFF
 if flag ~= 0 then
 vissible = not get_flag(flag)
 end
@@ -1186,34 +1347,53 @@ local sprite = memory.readbyte(ptr+1)
 local x = memory.readword(ptr+4)
 local y = memory.readword(ptr+6)
 if check_coordinates_on_screen(x, y) then
-local facing = nil
-
 if sprite > 0xef then
 sprite = get_var(sprite + 0x3f20)
-end
-local live_objects_ptr = RAM_LIVE_OBJECTS + 36
-for i = 1, 15 do
-if id == memory.readbyte(live_objects_ptr + 8) and sprite == memory.readbyte(live_objects_ptr + 5) and mapid == memory.readbyte(live_objects_ptr + 10) * 256 + memory.readbyte(live_objects_ptr + 9) then
-x = memory.readword(live_objects_ptr + 16) - 7
-y = memory.readword(live_objects_ptr + 18) - 7
-facing = bit.band(memory.readbyte(live_objects_ptr + 24), 0xf)
-break
-end
-live_objects_ptr = live_objects_ptr + 36
 end
 local name = message.translate("object") .. i .. string.format(", %x", sprite)
 if sprites[sprite] ~= nil then
 name = format_names(sprites[sprite])
 end
-local object = {x=x, y=y, sprite=sprite, name=name, type="object", id="object_" .. i}
-if facing then
-object.facing = facing
-end
+local object = {x=x, y=y, id_map=id, sprite=sprite, name=name, type="object", id="object_" .. i}
 object.name = get_name(mapid, object)
 table.insert(results, object)
 end
 end
 ptr = ptr + 24
+end
+objects = #results
+ptr = RAM_LIVE_OBJECTS + 36
+for i = 1, 15 do
+local active = bit.band(memory.readbyte(ptr), 1)
+local id = memory.readbyte(ptr +8)
+if active ~= 0 and id ~= 0xFF then
+local sprite = memory.readbyte(ptr +5)
+local map = memory.readbyte(ptr + 10) * 256 + memory.readbyte(ptr + 9)
+local x = memory.readword(ptr + 16) - 7
+local y = memory.readword(ptr + 18) - 7
+local facing = bit.band(memory.readbyte(ptr + 24), 0xf)
+local already_present = false
+for j = 1, objects do
+local obj = results[j]
+if id == obj.id_map and sprite == obj.sprite and map == mapid then
+obj.x = x
+obj.y = y
+obj.facing = facing
+already_present = true
+break
+end
+end
+if not already_present and map == mapid then
+local name = message.translate("object") .. objects +i .. string.format(", %x", sprite)
+if sprites[sprite] ~= nil then
+name = format_names(sprites[sprite])
+end
+local object = {x=x, y=y, facing=facing, sprite=sprite, name=name, type="object", id="object_" .. objects +i}
+object.name = get_name(mapid, object)
+table.insert(results, object)
+end
+end
+ptr = ptr + 36
 end
 local types = get_blocks_type()
 for y = 0, #types - 7 do
@@ -1223,9 +1403,9 @@ table.insert(results, {name=message.translate("pc"), x=x, y=y, id="pc_" .. y .. 
 elseif types[y][x] == 0x26 then
 table.insert(results, {name=message.translate("thin_ice"), x=x, y=y, id="ice_" .. y .. x, type="object", ignorable=true})
 elseif types[y][x] == 0x27 then
-table.insert(results, {name=message.translate("cracked_ice"), x=x, y=y, id="ice_" .. y .. x, type="object", ignorable=true})
+table.insert(results, {name=message.translate("cracked_ice"), x=x, y=y, id="ice_" .. y .. x, type="object"})
 elseif types[y][x] == 0x20 then
-table.insert(results, {name=message.translate("boulder_switch"), x=x, y=y, id="switch_" .. y .. x, type="object", ignorable=true})
+table.insert(results, {name=message.translate("switch"), x=x, y=y, id="switch_" .. y .. x, type="object", ignorable=true})
 end
 end
 end
@@ -1417,9 +1597,8 @@ end
 return current ~= next
 end
 
-function can_surf(current, next)
-if (is_water(current) and not is_water(next))
-or (is_water(next) and not is_water(current)) then
+function can_surf(type, elevation)
+if is_water(type) and elevation == 3 then
 return true;
 end
 return false
@@ -1472,21 +1651,21 @@ end
 return pathfind_hm_all
 end
 
-function get_hm_command(type, last)
+function get_hm_command(node, last)
 local command = ""
 local count = true
-if is_waterfall(type) then
-if is_waterfall(last) then
+if is_waterfall(node.type) then
+if is_waterfall(last.type) then
 command = "$ignore"
 else
 command = message.translate("waterfall")
 end
-elseif is_water(type) and is_waterfall(last) then
+elseif is_water(node.type) and is_waterfall(last.type) then
 command = "$ignore"
-elseif is_water(type) and not is_water(last) and last ~= 0xFF then
+elseif is_elevation_mismatch(node.elevation, last.elevation) and can_surf(node.type, last.elevation) then
 command = message.translate("enter_water")
 count = false
-elseif not is_water(type) and is_water(last) and type ~= 0xFF then
+elseif is_elevation_mismatch(node.elevation, last.elevation) and can_surf(last.type, node.elevation) then
 command = message.translate("exit_water")
 count = false
 end
@@ -1753,8 +1932,9 @@ return current_impassable
 end
 
 return next_impassable
-or (is_elevation_mismatch(current_elevation, next_elevation)
-and not can_surf(current_type, next_type))
+or is_elevation_mismatch(current_elevation, next_elevation)
+-- and not can_surf(current_type, next_elevation)
+-- and not can_surf(next_type, current_elevation))
 end
 
 function has_badge(badge)
@@ -1892,7 +2072,7 @@ break
 end
 end
 else
-path = find_path_to_xy(obj.x, obj.y, true)
+path = find_path_to_xy(obj.x, obj.y)
 end
 if path == nil then
 tolk.output(message.translate("no_path"))
@@ -1908,7 +2088,7 @@ end
 return false
 end
 
-function find_path_to_xy(dest_x, dest_y, search)
+function find_path_to_xy(dest_x, dest_y)
 local player_x, player_y = get_player_xy()
 local blocks = get_map_blocks()
 local allnodes = {}
@@ -2138,9 +2318,11 @@ if heading:find(border:sub(1,6))
 or heading:find(border:sub(#border-5,#border)) then
 local startpos = heading:find(border:sub(2, 2)) - 1
 local endpos = heading:find(border:sub(#border, #border))
+if startpos and endpos then
 if is_textbox(index + 1, border, startpos, endpos) then
 if not get_menu_over_text(index + 1, startpos, endpos, border) then
 return (index- 1) * 8, startpos * 4 + 5, endpos * 4 - 8
+end
 end
 end
 end
@@ -2281,11 +2463,13 @@ local functions = {
 [ROM_LOAD_SPRITE_SHEET] = load_sprite_sheet,
 [ROM_CLEAR_TEXT] = fill_window_pixel_buffer,
 [ROM_BLIT_BITMAP_RECT_TO_WINDOW] = blit_bitmap_rect_to_window,
+[ROM_BLIT_MOVE_INFO_ICON] = blit_move_info_icon,
 [ROM_ADD_WINDOW] = fill_window_pixel_buffer,
 [ROM_REMOVE_WINDOW] = remove_window,
 [ROM_DRAW_MENU_CURSOR] = draw_menu_cursor,
 [ROM_DRAW_GRID_CURSOR] = draw_grid_menu_cursor,
 [ROM_DRAW_LIST_CURSOR] = draw_list_menu_cursor,
+[ROM_TM_CASE_SELECTION] = read_tm_case_info,
 [ROM_MOVE_SELECTION] = read_move_menu_item,
 [ROM_PRINT_BOX_AND_TOTAL_POKEMON] = print_box_data_to_sprite,
 [ROM_DRAW_TEXT_AND_BUFFER_TILES] = draw_text_to_tile_buffer,
@@ -2304,6 +2488,8 @@ local functions = {
 [ROM_BATTLE_YESNO] = read_battle_yesno,
 [ROM_COPY_TEXT_INTO_HEALTHBOX] = add_healthbox_text,
 [ROM_SAFARI_COPY_TEXT_INTO_HEALTHBOX] = safari_add_healthbox_text,
+[ROM_STATUS_IN_HEALTHBOX] = show_status_in_healthbox,
+[ROM_STATUS_IN_SUMMARY] = show_status_in_summary,
 [ROM_PKMN_SELECTION] = read_pkmn_menu_item,
 [ROM_INIT_BGS] = clear_vram,
 [ROM_FOOTSTEP_FUNCTION] = play_footsteps
@@ -2319,6 +2505,7 @@ old_kbd_col = nil
 old_kbd_row = nil
 unread_text = false
 want_read = false
+ignore_bitmap = false
 
 clear_all_graphics()
 

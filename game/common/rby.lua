@@ -9,6 +9,7 @@ land_collision_pairs = {}
 water_collision_pairs = {}
 water_tilesets = {}
 mansion_cliffs= {}
+warp_tiles = {}
 cut_tiles = {
 [0] = 0x3d,
 [7] = 0x50,
@@ -93,6 +94,75 @@ return true
 end
 end
 
+function get_warp_tiles()
+local ptr = ROM_GENERAL_WARP_TILES
+for dir = DOWN, RIGHT, 4 do
+warp_tiles[0x20 +dir] = {}
+while memory.gbromreadbyte(ptr) ~= 0xFF do
+table.insert(warp_tiles[0x20 +dir], memory.gbromreadbyte(ptr))
+ptr = ptr +1
+end
+ptr = ptr +1
+end
+local special_tiles = {}
+local ptr = ROM_DOOR_TILES
+while memory.gbromreadbyte(ptr) ~= 0xFF do
+local index = memory.gbromreadbyte(ptr)
+special_tiles[index] = {}
+local doors = bit.bor(bit.band(memory.gbromreadword(ptr +1), 0x3FFF), bit.band(ROM_DOOR_TILES, 0xFFC000))
+while memory.gbromreadbyte(doors) ~= 0 do
+table.insert(special_tiles[index], memory.gbromreadbyte(doors))
+doors = doors +1
+end
+ptr = ptr +3
+end
+ptr = ROM_SPECIAL_WARP_TILES
+while memory.gbromreadbyte(ptr) ~= 0xFF do
+local index = memory.gbromreadbyte(ptr)
+if not special_tiles[index] then
+special_tiles[index] = {}
+end
+table.insert(special_tiles[index], memory.gbromreadbyte(ptr +1))
+ptr = ptr +3
+end
+ptr = ROM_WARP_TILES
+for i = 0, MAX_TILESETS -1 do
+warp_tiles[i] = get_rom_table(bit.bor(bit.band(memory.gbromreadword(ptr), 0x3FFF), bit.band(ROM_WARP_TILES, 0xFFC000)), 1)
+if special_tiles[i] then
+for _, v in pairs(special_tiles[i]) do
+table.insert(warp_tiles[i], v)
+end
+end
+ptr = ptr +2
+end
+end
+
+function is_warp_tile(x, y)
+local collisions = get_map_collisions()
+local tileset = memory.readbyte(RAM_MAP_HEADER)
+local mapid = get_map_id()
+if mapid == 0x63 and collisions[y][x] == 0x15 then
+return true
+end
+
+for dir = DOWN, RIGHT, 4 do
+for _, v in pairs(warp_tiles[dir +0x20]) do
+local dir_x, dir_y = decode_direction(dir)
+if v == collisions[y +dir_y][x +dir_x] then
+return true
+end
+end
+end
+
+for _, v in pairs(warp_tiles[tileset]) do
+if v == collisions[y][x] then
+return true
+end
+end
+
+return false
+end
+
 function get_warps()
 local current_mapid = get_map_id()
 local eventstart = memory.readword(RAM_MAP_EVENT_POINTER)
@@ -105,11 +175,12 @@ for i = 1, warps do
 local start = warp_table_start+(4*(i-1))
 local warpy = memory.gbromreadbyte(start)
 local warpx = memory.gbromreadbyte(start+1)
+if on_map_limit(warpx, warpy) or is_warp_tile(warpx, warpy) then
+local name = message.translate("warp") .. i
 local mapid = memory.gbromreadbyte(start+3)
 if mapid == 0xff then
 mapid = memory.readbyte(RAM_LAST_MAP_OUTDOORS)
 end
-local name = message.translate("warp") .. i
 local mapname = get_map_name(mapid)
 if mapname ~= "" then
 name = mapname
@@ -117,6 +188,7 @@ end
 local warp = {x=warpx, y=warpy, name=name, type="warp", id="warp_" .. i}
 warp.name = get_name(current_mapid, warp)
 table.insert(results, warp)
+end
 end
 -- special Pokemon Mansion situation
 if memory.readbyte(RAM_MAP_NUMBER) == 0xd7 then
@@ -170,8 +242,7 @@ end
 local ptr = RAM_MAP_OBJECTS+16 -- skip the player
 local missable = get_missable()
 local results = {}
-local width = memory.readbyteunsigned(RAM_MAP_WIDTH)
-local height = memory.readbyteunsigned(RAM_MAP_HEIGHT)
+local width, height = get_map_dimensions()
 local mapid = get_map_id()
 for i = 1, 15 do
 local ignorable = false
@@ -225,8 +296,11 @@ table.insert(results, {name=message.translate("statue"), x=x, y=y, id="statue_" 
 -- special cinnabar gym
 elseif (mapid == 0xa6 and tileset_number == 0x16 and (collisions[y][x] == 0x4c and collisions[y][x-1] ~= 0x4c and collisions[y][x+2] ~= 0x4c)) then
 table.insert(results, {name=message.translate("quiz"), x=x, y=y, id="quiz_" .. y .. x, type="object", ignorable=true})
+elseif (tileset_number == 0x11 and collisions[y][x] == 0x22)
+or (tileset_number == 0x16 and collisions[y][x] == 0x11) then
+table.insert(results, {name=message.translate("hole"), x=x, y=y, id="hole_" .. y .. x, type="object"})
 elseif tileset_number == 0x11 and collisions[y][x] == 0x2d then
-table.insert(results, {name=message.translate("boulder_switch"), x=x, y=y, id="switch_" .. y .. x, type="object", ignorable=true})
+table.insert(results, {name=message.translate("switch"), x=x, y=y, id="switch_" .. y .. x, type="object", ignorable=true})
 end
 end
 end
@@ -405,22 +479,22 @@ end
 return false
 end
 
-function get_hm_command(tile, last)
+function get_hm_command(node, last)
 local command = ""
 local count = true
-if is_cut_tile(tile) then
+if is_cut_tile(node.type) then
 command = message.translate("bush")
-elseif is_water_tile(tile) and not is_water_tile(last) and last ~= 0xff then
+elseif is_water_tile(node.type) and not is_water_tile(last.type) and last.type ~= 0xff then
 command = message.translate("enter_water")
 count = false
-elseif not is_water_tile(tile) and is_water_tile(last) and tile ~= 0xff then
+elseif not is_water_tile(node.type) and is_water_tile(last.type) and node.type ~= 0xff then
 command = message.translate("exit_water")
 count = false
 end
 return command, count
 end
 
-valid_path = function (node, neighbor)
+ function valid_path(node, neighbor)
 for dir = DOWN, RIGHT, 4 do
 local dir_x, dir_y = decode_direction(dir)
 dir_x = dir_x + dir_x

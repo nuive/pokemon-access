@@ -219,6 +219,5 @@ maps = {
   [237] = "Silph Co.",
   [245] = "Altopiano Blu",
   [246] = "Altopiano Blu",
-  [247] = "Altopiano Blu",
-  [248] = "Casa Della Spiaggia"
+  [247] = "Altopiano Blu"
 }
