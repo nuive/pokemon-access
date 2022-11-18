@@ -30,6 +30,34 @@ block_move = {
 }
 BADGE_CUT = 2
 BADGE_SURF = 5
+tile_objects = {
+[0x04] = {
+[0x32] = {"pc", false}
+},
+[0x06] = {
+[0x52] = {"pc", false}
+},
+[0x07] = {
+[0x1b] = {"trashcan", false}
+},
+[0x0d] = {
+[0x58] = {"trashcan", false}
+},
+[0x10] = {
+[0x1b] = {"pc", false},
+[0x5e] = {"closed_door", false}
+},
+[0x11] = {
+[0x22] = {"hole", false},
+[0x2d] = {"switch", true}
+},
+[0x16] = {
+[0x11] = {"hole", false},
+[0x18] = {"closed_door", false},
+[0x24] = {"closed_door", false},
+[0x3d] = {"statue", false}
+}
+}
 
 function format_names(name)
 if name:match("[player]") then
@@ -281,26 +309,22 @@ local collisions = get_map_collisions()
 local tileset_number = memory.readbyte(RAM_MAP_HEADER)
 for y = 0, #collisions - 6 do
 for x = 0, #collisions[0] - 6 do
-if (tileset_number == 0x04 and collisions[y][x] == 0x32)
-or (tileset_number == 0x06 and collisions[y][x] == 0x52)
-or (tileset_number == 0x10 and collisions[y][x] == 0x1b) then
-table.insert(results, {name=message.translate("pc"), x=x, y=y, id="pc_" .. y .. x, type="object", ignorable=true})
-elseif (tileset_number == 0x0d and collisions[y][x] == 0x58)
-or (tileset_number == 0x07 and collisions[y][x] == 0x1b) then
-table.insert(results, {name=message.translate("trashcan"), x=x, y=y, id="trashcan_" .. y .. x, type="object", ignorable=true})
-elseif (tileset_number == 0x16 and (collisions[y][x] == 0x24 or collisions[y][x] == 0x18))
-or (tileset_number == 0x10 and collisions[y][x] == 0x5e) then
-table.insert(results, {name=message.translate("closed_door"), x=x, y=y, id="closeddoor_" .. y .. x, type="object", ignorable=true})
-elseif (tileset_number == 0x16 and collisions[y][x] == 0x3d) then
-table.insert(results, {name=message.translate("statue"), x=x, y=y, id="statue_" .. y .. x, type="object", ignorable=true})
 -- special cinnabar gym
-elseif (mapid == 0xa6 and tileset_number == 0x16 and (collisions[y][x] == 0x4c and collisions[y][x-1] ~= 0x4c and collisions[y][x+2] ~= 0x4c)) then
-table.insert(results, {name=message.translate("quiz"), x=x, y=y, id="quiz_" .. y .. x, type="object", ignorable=true})
-elseif (tileset_number == 0x11 and collisions[y][x] == 0x22)
-or (tileset_number == 0x16 and collisions[y][x] == 0x11) then
-table.insert(results, {name=message.translate("hole"), x=x, y=y, id="hole_" .. y .. x, type="object"})
-elseif tileset_number == 0x11 and collisions[y][x] == 0x2d then
-table.insert(results, {name=message.translate("switch"), x=x, y=y, id="switch_" .. y .. x, type="object", ignorable=true})
+if (mapid == 0xa6 and tileset_number == 0x16 and (collisions[y][x] == 0x4c and collisions[y][x-1] ~= 0x4c and collisions[y][x+2] ~= 0x4c)) then
+local quizz = {name=message.translate("quiz"), x=x, y=y, id="quiz_" .. y .. x, type="object", ignorable=true}
+quizz.name = get_name(mapid, quizz)
+table.insert(results, quizz)
+else
+if tile_objects[tileset_number] then
+for i, v in pairs(tile_objects[tileset_number]) do
+if i == collisions[y][x] then
+local object, ignorable = unpack(v)
+local tileobj = {x=x, y=y, name=message.translate(object), type="object", id=object .. "_" .. y .. x, ignorable=ignorable}
+tileobj.name = get_name(mapid, tileobj)
+table.insert(results, tileobj)
+end
+end
+end
 end
 end
 end
@@ -495,6 +519,7 @@ return command, count
 end
 
  function valid_path(node, neighbor)
+advance_pathfinder_counter()
 for dir = DOWN, RIGHT, 4 do
 local dir_x, dir_y = decode_direction(dir)
 dir_x = dir_x + dir_x
@@ -636,9 +661,10 @@ if on_map() then
 local player_x, player_y = get_player_xy()
 local collisions = get_map_collisions()
 local type = collisions[player_y][player_x]
-camera_x = -7
-camera_y = -7
 play_tile_sound(type, 0, 30, false)
+if camera_follow_player then
+set_camera_default()
+end
 end
 end)
 table.insert(callback_functions, ROM_FOOTSTEP_FUNCTION)

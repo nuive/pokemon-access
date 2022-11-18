@@ -1,4 +1,4 @@
-CORE_FILES = {"rby"}
+core_file = "rby"
 
 RAM_SCREEN = 0x8800
 RAM_SAVED_BANK = 0xcf08

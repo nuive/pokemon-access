@@ -1,5 +1,5 @@
 # Pokémon Access
-# Version 3.0.1
+# Version 3.1.0
 
 ## Introduction
 
@@ -9,6 +9,7 @@ The goal of this project is to extend this functionality throughout all the Poké
 -Pokémon Red, Blue and Yellow.
 -Pokémon Gold, Silver and Crystal.
 -Pokémon Fire Red and Leaf Green.
+-Pokémon Emerald.
 
 These scripts are designed to work with the VBA-ReRecording GameBoy emulator.
   
@@ -20,6 +21,7 @@ These scripts are designed to work with the VBA-ReRecording GameBoy emulator.
 -Pokémon Red, Blue and Yellow: : English, French, German, Italian and Spanish.
 -Pokémon Gold, Silver and Crystal: English, French, Italian, Spanish and Brazilian Portuguese (crystal only).
 -Pokémon Fire Red and Leaf Green: English (version 1.0) and Spanish.
+-Pokémon Emerald: English and Spanish.
 
 3. After you have the desired rom, extract and run VBA.
 
@@ -37,12 +39,15 @@ You can do this from the open dialog, or load a recent rom after you've opened i
 Once the rom is loaded, load the lua script (tools, lua, New Lua script window).
 From there, load pokemon.lua, press run. It should say ready (or your language equivalent, bassed on the game you've downloaded), alt tab out and back in again
 
+## Troubleshooting
+If you receive any error when opening the emulator it is possible that you need to install DirectX. DirectX is necessary to run the latest versions of the VBA-ReRecording emulator, without it the emulator will show an error message indicating that a DLL is missing and will not open. It can be downloaded from https://www.microsoft.com/en-us/download/confirmation.aspx?id=35
+
 ## Keys
-Make sure num lock is off while playing the game, or the keys won't work.
 
 * Standard gameBoy keys: z/x are a/b, a/s l/r, enter/backspace start/select and arrows.
 * j, k and l - previous, current and next item
 * shift k - rename current item
+* shift j and l - previous and next item filters
 * m - read current map name
 * shift M - rename current map
 * t - read text on screen, if any
@@ -62,22 +67,23 @@ Make sure num lock is off while playing the game, or the keys won't work.
 * add shift to d/g/r/v to move the camera, ignoring walls
 * Shift + y - read current camera position
 * shift+f - pathfind to camera position
+* Shift + c - toggle if camera follows the player or not.
 
 ### Gold/SILVER/Crystal exclusive keys
 * shift+e - say which piece you are holding (on the unown puzzles)
 
 ## HackRom support
-Current version of the script has extended support for hackroms of the games previously mentioned.
-In the future, you'll have a more intuitive in-game feature to manage HackRoms. For now, the process is as follows.
+Current version of the script has extended support for hackroms of the games previously mentioned. The process is as follows.
 
 You've loaded a ROM that the script detects as "Language not supported" or "Game not supported".
 You return to the game ignoring the previous result... but wait, if you try to execute any script command you'll only get the message "Script not loaded". Okay, let's fix this...
 
-1. With the incompatible game running, press shift+0. A window will show up, asking you for a "base game folder". This, in other words, is the base game script that this incompatible game will use. You'll have to access the lua/game folder, and here you'll see all compatible scripts. Keep in mind that you have to tell the script the exact folder name. For example, if you want to use the red/blue script, you'll write 'red_blue'; if you want to use the pokémon crystal script you'll write crystal, etc...
-2. When you type the base folder name and press "OK", if the folder is valid the script now asks you for a language for the spoken messages (not for the game names, those are into the data folder). You have to enter a valid language (see languages available inside the messages folder) and put your prefered one (en, es, it...).
-3. When you type the language and press "OK", if the language is valid the script now asks you for a data folder. You have to enter a name of a valid data folder. This is the folder which containts the LUA files for the game (maps.lua, sprites.lua, memory.lua...). This folder must be inside the base game folder.
-4. When you type the language code and press "OK", if the language is valid the script will restart automatically and load the new data.
-5. Congratulations! Now you can enjoy your hack!
+1. With the incompatible game running, press shift+0. A window will show up, where you'll select the base game of the hack.
+2. When you press "OK", if there are any game expansions available, the script will show a list where you can add all the compatible expansions with your hack.
+3. When you press "OK", the script now asks you for a data folder. This is the folder which containts the LUA files for the game (maps.lua, sprites.lua, memory.lua...).
+4. When you press "OK", the script now asks you for a language for the spoken messages (not for the game names, those are into the data folder).
+When you press "OK", the script will restart automatically and load the new data.
+Congratulations! Now you can enjoy your hack!
 
 ### Notes
 * You can edit previously added HackRoms pressing again Shift + 0, for example if you want to try another base script or if you develop a custom extension  for a specific hack.
@@ -102,4 +108,4 @@ Original source code: https://github.com/tspivey/pokecrystal-access
 -ambro86 for the italian translations.
 -pika-san for the french translations.
 -janagirl for the german translations.
-
+-zargonbr  for the brazilian portuguese translations.

@@ -10,6 +10,20 @@ BADGE_WATERFALL = 8
 old_kbd_col = nil
 old_kbd_row = nil
 old_puzzle_cursor = nil
+tile_objects = {
+[0x15] = {"tree", true},
+[0x1D] = {"tree", true},
+[0x26] = {"thin_ice", true},
+[0x27] = {"cracked_ice", false},
+[0x91] = {"bookshelf", true},
+[0x93] = {"pc", false},
+[0x94] = {"radio", true},
+[0x95] = {"map", true},
+[0x96] = {"martshelf", true},
+[0x97] = {"tv", true},
+[0x9d] = {"window", true},
+[0x9f] = {"incense_burner", true}
+}
 
 function format_names(name)
 if name:match("[player]") then
@@ -41,6 +55,17 @@ end
 end
 end
 
+function is_grass_tile(tile)
+if tile == 0x10
+or tile == 0x14
+or tile == 0x18
+or tile == 0x1c
+or (tile >= 0x48 and tile <= 0x4c) then
+return true
+end
+return false
+end
+
 function is_cut_tile(tile)
 if tile == 0x12 or tile == 0x1a then
 return true
@@ -70,6 +95,20 @@ return true
 else
 return false
 end
+end
+
+function is_stair(tile)
+if (tile >= 0x70 and tile <= 0x7F) then
+return true
+end
+return false
+end
+
+function is_ledge(tile)
+if (tile >= 0xA0 and tile <= 0xAF) then
+return true
+end
+return false
 end
 
 function get_hm_command(node, last)
@@ -188,8 +227,6 @@ end
 local warp = {x=warpx, y=warpy, name=name, type="warp", id="warp_" .. i}
 warp.name = get_name(current_mapid, warp)
 table.insert(results, warp)
-elseif is_hole(collisions[warpy][warpx]) then
-table.insert(results, {name=message.translate("hole"), x=warpx, y=warpy, id="hole_" .. warpy .. warpx, type="object"})
 end
 end
 return results
@@ -261,25 +298,19 @@ end
 local collisions = get_map_collisions()
 for y = 0, #collisions - 6 do
 for x = 0, #collisions[0] - 6 do
-if collisions[y][x] == 0x15
-or collisions[y][x] == 0x1d then
-table.insert(results, {name=message.translate("tree"), x=x, y=y, id="tree_" .. y .. x, type="object", ignorable = true})
-elseif collisions[y][x] == 0x91 then
-table.insert(results, {name=message.translate("bookshelf"), x=x, y=y, id="bookshelf_" .. y .. x, type="object", ignorable = true})
-elseif collisions[y][x] == 0x93 then
-table.insert(results, {name=message.translate("pc"), x=x, y=y, id="pc_" .. y .. x, type="object", ignorable = true})
-elseif collisions[y][x] == 0x94 then
-table.insert(results, {name=message.translate("radio"), x=x, y=y, id="radio_" .. y .. x, type="object", ignorable = true})
-elseif collisions[y][x] == 0x95 then
-table.insert(results, {name=message.translate("map"), x=x, y=y, id="map_" .. y .. x, type="object", ignorable = true})
-elseif collisions[y][x] == 0x96 then
-table.insert(results, {name=message.translate("martshelf"), x=x, y=y, id="martshelf_" .. y .. x, type="object", ignorable = true})
-elseif collisions[y][x] == 0x97 then
-table.insert(results, {name=message.translate("tv"), x=x, y=y, id="tv_" .. y .. x, type="object", ignorable = true})
-elseif collisions[y][x] == 0x9d then
-table.insert(results, {name=message.translate("window"), x=x, y=y, id="window_" .. y .. x, type="object", ignorable = true})
-elseif collisions[y][x] == 0x9f then
-table.insert(results, {name=message.translate("incense_burner"), x=x, y=y, id="burner_" .. y .. x, type="object", ignorable = true})
+if is_hole(collisions[y][x]) then
+local hole = {name=message.translate("hole"), x=x, y=y, id="hole_" .. y .. x, type="object"}
+hole.name = get_name(mapid, hole)
+table.insert(results, hole)
+else
+for i, v in pairs(tile_objects) do
+if i == collisions[y][x] then
+local object, ignorable = unpack(v)
+local tileobj = {x=x, y=y, name=message.translate(object), type="object", id=object .. "_" .. y .. x, ignorable=ignorable}
+tileobj.name = get_name(mapid, tileobj)
+table.insert(results, tileobj)
+end
+end
 end
 end
 end
@@ -422,6 +453,7 @@ return false
 end
 
 function valid_path(node, neighbor)
+advance_pathfinder_counter()
 for dir = DOWN, RIGHT, 4 do
 local dir_x, dir_y = decode_direction(dir)
 dir_x = dir_x + dir_x
@@ -446,11 +478,7 @@ return true
 end -- valid
 
 function play_tile_sound(type, pan, vol, is_camera)
-	if type == 0x10
-	or type == 0x14
-	or type == 0x18
-	or type == 0x1c
-	or (type >= 0x48 and type <= 0x4c) then
+	if is_grass_tile(type) then
 		audio.play(scriptpath .. "sounds\\gb\\s_grass.wav", 0, pan, vol)
 	elseif is_cut_tile(type) then
 		audio.play(scriptpath .. "sounds\\gb\\s_cut.wav", 0, pan, vol)
@@ -463,9 +491,9 @@ function play_tile_sound(type, pan, vol, is_camera)
 		audio.play(scriptpath .. "sounds\\common\\s_waterfall.wav", 0, pan, vol)
 	elseif is_water_tile(type) then
 		audio.play(scriptpath .. "sounds\\common\\s_water.wav", 0, pan, vol)
-	elseif (type >= 0xa0 and type < 0xb0) then
+	elseif is_ledge(type) then
 		audio.play(scriptpath .. "sounds\\common\\s_mad.wav", 0, pan, vol)
-	elseif is_camera and (type >= 0x70 and type < 0x80) then
+	elseif is_camera and is_stair(type) then
 		audio.play(scriptpath .. "sounds\\common\\s_stair.wav", 0, pan, vol)
 	elseif is_camera and is_hole(type) then
 		audio.play(scriptpath .. "sounds\\common\\s_hole.wav", 0, pan, vol)
@@ -594,9 +622,10 @@ if memory.readbyte(HRAM_ROM_BANK) == math.floor(ROM_FOOTSTEP_FUNCTION / 0x4000) 
 local player_x, player_y = get_player_xy()
 local collisions = get_map_collisions()
 local type = collisions[player_y][player_x]
-camera_x = -7
-camera_y = -7
 play_tile_sound(type, 0, 30, false)
+if camera_follow_player then
+set_camera_default()
+end
 end
 end)
 table.insert(callback_functions, (ROM_FOOTSTEP_FUNCTION%0x4000)+0x4000)

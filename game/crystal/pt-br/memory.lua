@@ -1,4 +1,4 @@
-CORE_FILES = {"gsc"}
+core_file = "gsc"
 
 RAM_SCREEN = 0x8800
 RAM_IN_BATTLE = 0xd22d
@@ -44,20 +44,20 @@ RAM_UNOWN_PUZZLE = 0xc6d0
 RAM_PUZZLE_CURSOR = 0xcf65
 ROM_FOOTSTEP_FUNCTION = 0xd4b6
 ROM_TILE_FLAGS = 0x4ce1f
-KEYBOARD_STRING = "DEL   END"
+KEYBOARD_STRING = "APAGA SAIR"
 KEYBOARD_UPPER = {
 {"A", "B", "C", "D", "E", "F", "G", "H", "I"},
 {"J", "K", "L", "M", "N", "O", "P", "Q", "R"},
-{"S", "T", "U", "V", "W", "X", "Y", "Z", "SPACE"},
-{"-", "?", "!", "/", ".", ",", "SPACE", "SPACE", "SPACE"},
-{"lower", "lower", "lower", "DEL", "DEL", "DEL", "END", "END", "END"}
+{"S", "T", "U", "V", "W", "X", "Y", "Z", "ESPAÇO"},
+{"-", "?", "!", "/", ".", ",", "ESPAÇO", "ESPAÇO", "ESPAÇO"},
+{"menor", "menor", "menor", "APAGA", "APAGA", "APAGA", "SAIR", "SAIR", "SAIR"}
 }
 
 KEYBOARD_LOWER = {
 {"a", "b", "c", "d", "e", "f", "g", "h", "i"},
 {"j", "k", "l", "m", "n", "o", "p", "q", "r"},
-{"s", "t", "u", "v", "w", "x", "y", "z", "space"},
+{"s", "t", "u", "v", "w", "x", "y", "z", "espaço"},
 {"×", "(", ")", ":", ";", "[", "]", "PK", "MN"},
-{"UPPER", "UPPER", "UPPER", "DEL", "DEL", "DEL", "END", "END", "END"}
+{"MAIOR", "MAIOR", "MAIOR", "APAGA", "APAGA", "APAGA", "SAIR", "SAIR", "SAIR"}
 }
-KEYBOARD_UPPER_STRING = "UPPER"
+KEYBOARD_UPPER_STRING = "MAIOR"

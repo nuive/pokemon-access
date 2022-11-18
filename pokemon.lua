@@ -1,7 +1,7 @@
 require "a-star"
 serpent = require "serpent"
 message = require "message"
-inputbox = require "Inputbox"
+controls = require "win-controls"
 scriptpath = debug.getinfo(1, "S").source:sub(2):match("(.*[/\\])")
 callback_functions = {}
 langmap = {
@@ -9,11 +9,13 @@ langmap = {
 ["E"] = "en",
 ["F"] = "fr",
 ["I"] = "it",
-["PB"] = "pt-br",
 ["S"] = "es",
 }
-pathfind_hm_available = false
-pathfind_hm_all = false
+FILTER_ALL = 1
+FILTER_WARPS = 2
+FILTER_CONNECTIONS = 3
+FILTER_SIGNPOSTS = 4
+FILTER_OBJECTS = 5
 
 function path_exists(path)
    local ok, err, code = os.rename(path, path)
@@ -26,9 +28,69 @@ function path_exists(path)
    return ok, err
 end
 
+function list_files(path, filter, remove_extension)
+local list = {}
+if path_exists(path) then
+local pfile = io.popen("dir /b \"" .. path .."\"")
+for filename in pfile:lines() do
+if not contains(filter, filename) then
+if remove_extension then
+local index = filename:find("%.")
+if index then
+table.insert(list, filename:sub(1, index -1))
+else
+table.insert(list, filename)
+end
+else
+table.insert(list, filename)
+end
+end
+end
+pfile:close()
+end
+return list
+end
+
+function list_directories(path, filter)
+local list = {}
+if path_exists(path) then
+local pfile = io.popen("dir /b /ad \"" .. path .."\"")
+for filename in pfile:lines() do
+if not contains(filter, filename) then
+table.insert(list, filename)
+end
+end
+pfile:close()
+end
+return list
+end
+
+function get_game_list(list)
+local game_list = {}
+for _, v in pairs(list) do
+table.insert(game_list, message.translate(v))
+end
+return game_list
+end
+
+function get_game_expansions(path)
+local list = {}
+if path_exists(path) then
+local pfile = io.popen("dir /b \"" .. path .."\"")
+for filename in pfile:lines() do
+local file = io.open(path .. "\\" .. filename)
+local name = file:read()
+table.insert(list, name:sub(4, #name))
+file:close()
+end
+pfile:close()
+end
+return list
+end
+
 function load_game()
 if data == nil then
-tolk.output("Game data not found.")
+tolk.output(message.translate("data_not_found"))
 return false
 end
 local f = nil
@@ -39,23 +101,21 @@ f = loadfile(path .. v)
 if f ~= nil then
 f()
 else
-tolk.output("Game data not found.")
+tolk.output(message.translate("data_not_found"))
 return false
 end
 end
--- load the core scripts
-if CORE_FILES ~= nil then
-for _, v in ipairs(CORE_FILES) do
-f = loadfile(scriptpath .. "game\\common\\" .. v .. ".lua")
+-- load the core script
+if core_file ~= nil then
+f = loadfile(scriptpath .. "game\\common\\" .. core_file .. ".lua")
 if f ~= nil then
 f()
 else
-tolk.output("Problem loading core script.")
+tolk.output(message.translate("core_script_problem"))
 return false
 end
-end
 else
-tolk.output("Core script is missing.")
+tolk.output(message.translate("core_script_missing"))
 return false
 end
 -- load specific game script
@@ -63,18 +123,29 @@ f = loadfile(scriptpath .. "game\\" .. game .. "\\main.lua")
 if f ~= nil then
 f()
 end
+-- load possible expansions
+if expansion_files ~= nil then
+for _, v in pairs(expansion_files) do
+f = loadfile(scriptpath .. "game\\expansion\\" .. game .. "\\" .. v .. ".lua")
+if f ~= nil then
+f()
+else
+tolk.output(message.translate("expansion_problem"))
+end
+end
+end
 return load_data()
 end
 
 function load_data()
 if data == nil then
-tolk.output("Game data not found.")
+tolk.output(message.translate("data_not_found"))
 return false
 end
 local path = scriptpath .. "game\\" .. game .. "\\" .. data .. "\\"
 local t = {"maps.lua", "sprites.lua"}
 local partial = false
-for i, v in ipairs(t) do
+for _, v in pairs(t) do
 local f = loadfile(path .. v)
 if f ~= nil then
 f()
@@ -83,9 +154,18 @@ partial = true
 tolk.output(v)
 end
 end
-message.set_strings(language)
 if partial then
-tolk.output("Warning: Game not fully supported.")
+tolk.output(message.translate("game_not_fully_supported"))
+end
+-- load optional core script
+path = path .. "core.lua"
+if path_exists(path) then
+local f = loadfile(path)
+if f ~= nil then
+f()
+else
+tolk.output(message.translate("custom_core_script_problem"))
+end
 end
 return true
 end
@@ -177,19 +257,46 @@ end
 function get_map_info()
 local mapid = get_map_id()
 local results = {mapid=mapid, objects={}}
+reset_current_item_filter_if_needed()
 for i, warp in ipairs(get_warps()) do
 table.insert(results.objects, warp)
-end
-for i, signpost in ipairs(get_signposts()) do
-table.insert(results.objects, signpost)
 end
 for i, connection in ipairs(get_connections()) do
 table.insert(results.objects, connection)
 end
+for i, signpost in ipairs(get_signposts()) do
+table.insert(results.objects, signpost)
+end
 for i, object in ipairs(get_objects()) do
 table.insert(results.objects, object)
 end
+filter_list(results.objects, current_item_filter)
 return results
+end
+
+function filter_list(results, filter)
+local filter_key = nil
+if filter == FILTER_ALL then
+return
+elseif filter == FILTER_WARPS then
+filter_key = "warp"
+elseif filter == FILTER_CONNECTIONS then
+filter_key = "connection"
+elseif filter == FILTER_SIGNPOSTS then
+filter_key = "signpost"
+elseif filter == FILTER_OBJECTS then
+filter_key = "object"
+end
+if filter_key then
+local i = 1
+while i <= #results do
+if results[i].type ~= filter_key then
+table.remove(results, i)
+else
+i = i +1
+end
+end
+end
 end
 
 function direction(x, y, destx, desty)
@@ -258,13 +365,20 @@ function reset_camera_focus(player_x, player_y)
 	if camera_x == DEFAULT_CAMERA_X and camera_y == DEFAULT_CAMERA_Y then
 		camera_x = player_x
 		camera_y = player_y
-if device == "gb" then
-last_camera_tile = 0xff
-	end
+		if device == "gb" then
+			last_camera_tile = 0xff
+		elseif device == "gba" then
+			camera_elevation = get_player_elevation()
+		end
 	end
 end
 
 function set_camera_default()
+	camera_x = DEFAULT_CAMERA_X
+	camera_y = DEFAULT_CAMERA_Y
+end
+
+function set_camera_to_player()
 	camera_x = DEFAULT_CAMERA_X
 	camera_y = DEFAULT_CAMERA_Y
 	camera_move(0, 0, true)
@@ -311,15 +425,6 @@ end
 speak_path(clean_path(path))
 end
 
-function contains(table, key)
-for _, v in pairs(table) do
-if v == key then
-return true
-end
-end
-return false
-end
-
 function compare(t1, t2)
 if #t1 ~= #t2 then
 return false
@@ -332,13 +437,37 @@ end
 return true
 end
 
+function contains(list, value)
+if list == nil or value == nil then
+return nil
+end
+if type(value) == "table" then
+local index_list = {}
+for _, item in pairs(value) do
+for i, v in pairs(list) do
+if v == item then
+table.insert(index_list, i)
+end
+end
+end
+return index_list
+else
+for i, v in pairs(list) do
+if v == value then
+return i
+end
+end
+end
+return nil
+end
+
 function handle_user_actions()
 local kbd = input.read()
 local pressed_keys = {}
 kbd.xmouse = nil
 kbd.ymouse = nil
 for k, v in pairs(kbd) do
-if v then
+if v and k ~= "capslock" and k ~= "numlock" and k ~= "scrolllock" then
 table.insert(pressed_keys, k)
 end
 end
@@ -370,14 +499,18 @@ end -- not on map
 elseif not needs_script then
 fn(args)
 else
-tolk.output("Script not loaded.")
+tolk.output(message.translate("script_not_loaded"))
 end -- data check
 end
 
 function read_current_item()
 local info = get_map_info()
 reset_current_item_if_needed(info)
+if info.objects[current_item] ~= nil then
 read_item(info.objects[current_item])
+else
+tolk.output(message.translate("empty_list"))
+end
 end
 
 function reset_current_item_if_needed(info)
@@ -409,6 +542,61 @@ end
 read_current_item()
 end
 
+function read_current_item_filter()
+reset_current_item_filter_if_needed()
+local filter = ""
+if current_item_filter == FILTER_ALL then
+filter = message.translate("all")
+elseif current_item_filter == FILTER_WARPS then
+filter = message.translate("warps")
+elseif current_item_filter == FILTER_CONNECTIONS then
+filter = message.translate("connections")
+elseif current_item_filter == FILTER_SIGNPOSTS then
+filter = message.translate("signposts")
+elseif current_item_filter == FILTER_OBJECTS then
+filter = message.translate("objects")
+end
+if filter ~= "" then
+tolk.output(filter)
+current_item = 1
+read_current_item()
+end
+end
+
+function reset_current_item_filter_if_needed()
+if current_item_filter == nil then
+current_item_filter = FILTER_ALL
+end
+end
+
+function read_next_item_filter()
+reset_current_item_filter_if_needed()
+current_item_filter = current_item_filter +1
+if current_item_filter > FILTER_OBJECTS then
+current_item_filter = FILTER_ALL
+end
+read_current_item_filter()
+end
+
+function read_previous_item_filter()
+reset_current_item_filter_if_needed()
+current_item_filter = current_item_filter -1
+if current_item_filter == 0 then
+current_item_filter = FILTER_OBJECTS
+end
+read_current_item_filter()
+end
+
+function set_camera_follow()
+if not camera_follow_player then
+camera_follow_player = true
+tolk.output(message.translate("camera_follow_player"))
+else
+camera_follow_player = false
+tolk.output(message.translate("camera_not_follow_player"))
+end
+end
+
 function set_pathfind_hm()
 if not pathfind_hm_available and not pathfind_hm_all then
 pathfind_hm_available = true
@@ -429,8 +617,25 @@ end
 function pathfind()
 local info = get_map_info()
 reset_current_item_if_needed(info)
+if info.objects[current_item] ~= nil then
 local obj = info.objects[current_item]
 find_path_to(obj)
+else
+tolk.output(message.translate("object_needed"))
+end
+end
+
+function advance_pathfinder_counter()
+if max_paths > 0 then
+path_counter = path_counter +1
+if path_counter % (max_paths *1000) == 0 then
+emu.frameadvance()
+if search_message_repeat > 0
+and (path_counter == max_paths *5000 or path_counter % (max_paths *100000 *search_message_repeat) == 0) then
+tolk.output(message.translate("searching"))
+end
+end
+end
 end
 
 function read_item(item)
@@ -505,7 +710,7 @@ local info = get_map_info()
 reset_current_item_if_needed(info)
 local id = get_map_id()
 local obj_id = info.objects[current_item].id
-name = inputbox.inputbox(message.translate("new_name"), string.format(message.translate("enter_newname"), info.objects[current_item].name), info.objects[current_item].name)
+name = controls.inputbox(message.translate("new_name"), string.format(message.translate("enter_newname"), info.objects[current_item].name), info.objects[current_item].name)
 if name == nil then
 return
 end
@@ -529,7 +734,7 @@ function rename_map()
 local id = get_map_id()
 local mapname = get_map_name(id)
 local obj_id = "map"
-name = inputbox.inputbox(message.translate("new_name"), string.format(message.translate("enter_newname"), mapname), mapname)
+name = controls.inputbox(message.translate("new_name"), string.format(message.translate("enter_newname"), mapname), mapname)
 if name == nil then
 return
 end
@@ -608,6 +813,8 @@ end
 end
 
 function init_script()
+core_file = nil
+expansion_files = nil
 for _,cb_function  in pairs(callback_functions) do
 memory.registerexec(cb_function, nil)
 end
@@ -620,6 +827,8 @@ commands = {
 [{"J"}] = {read_previous_item, true, true};
 [{"K"}] = {read_current_item, true, true};
 [{"L"}] = {read_next_item, true, true};
+[{"J", "shift"}] = {read_previous_item_filter, true, true};
+[{"L", "shift"}] = {read_next_item_filter, true, true};
 [{"P"}] = {pathfind, true, true};
 [{"P", "shift"}] = {set_pathfind_hm, true, true};
 [{"T"}] = {read_text, true, false};
@@ -631,18 +840,20 @@ commands = {
 [{"G"}] = {camera_move_right, true, true},
 [{"R"}] = {camera_move_up, true, true},
 [{"V"}] = {camera_move_down, true, true},
-[{"F"}] = {set_camera_default, true, true},
+[{"F"}] = {set_camera_to_player, true, true},
 [{"D", "shift"}] = {camera_move_left_ignore_wall, true, true},
 [{"G", "shift"}] = {camera_move_right_ignore_wall, true, true},
 [{"R", "shift"}] = {camera_move_up_ignore_wall, true, true},
 [{"V", "shift"}] = {camera_move_down_ignore_wall, true, true},
 [{"F", "shift"}] = {find_path_to_camera, true, true};
+[{"C"}] = {set_camera_follow, true, true};
 [{"H"}] = {read_enemy_health, true, false},
 [{"H", "shift"}] = {read_player_health, true, false},
 [{"0", "shift"}] = {add_hackrom_values, false, false},
 }
 
 game = nil
+game_checksum = nil
 language = nil
 data = nil
 base_game = nil
@@ -651,6 +862,13 @@ chars = {}
 fonts = {}
 maps = {}
 sprites = {}
+default_language = "en"
+pathfind_hm_available = false
+pathfind_hm_all = false
+camera_follow_player = true
+max_paths = 100
+search_message_repeat = 2
+
 -- get current game and data
 get_game()
 
@@ -668,8 +886,10 @@ end
 last_line = ""
 last_textbox_text = nil
 current_item = nil
+current_item_filter = nil
 camera_x = DEFAULT_CAMERA_X
 camera_y = DEFAULT_CAMERA_Y
+path_counter = 0
 tolk.output(message.translate("ready"))
 end
 end
@@ -683,6 +903,13 @@ return "gb"
 end
 
 return nil
+end
+
+function is_game(game)
+if core_file == game then
+return true
+end
+return false
 end
 
 function get_game()
@@ -705,18 +932,20 @@ set_hackrom_values(checksum)
 elseif set_hackrom_values(checksum, code .. lang) then
 valid = true
 else
-tolk.output("Game data not found.")
+tolk.output(message.translate("data_not_found"))
 return false
 end
 elseif set_hackrom_values(checksum, code .. lang) then
 valid = true
-elseif device == "gb" and parse_old_title(game_title) then
+elseif device == "gb" and parse_old_title(game_title, checksum) then
 valid = true
 end
 if valid then
+game_checksum = checksum
+message.set_strings(language)
 return load_game()
 end
-tolk.output("Game not supported.")
+tolk.output(message.translate("game_not_supported"))
 return false
 end
 
@@ -732,12 +961,12 @@ end
 if hacks[curgame] ~= nil and hacks[curgame][checksum] ~= nil then
 if hacks[curgame][checksum].lang == nil then
 local hack_lang = nil
-repeat
-hack_lang = inputbox.inputbox("Game Language", "Input the game's language", hack_lang or language or "")
-if hack_lang == nil then
-return false
+list = list_files(scriptpath .. "message", nil, true)
+index = controls.combobox(message.translate("game_language"), message.translate("select_game_language"), list, contains(list, hack_lang or hacks[id][game_checksum].lang or language))
+if index == nil then
+return
 end
-until hack_lang ~= "" and contains(langmap, hack_lang)
+hack_lang = list[index]
 hacks[curgame][checksum].lang = hack_lang
 local file = io.open("hacks.lua", "wb")
 file:write(serpent.block(hacks, {comment=false}))
@@ -745,6 +974,7 @@ io.close(file)
 end
 base_game = game
 game = hacks[curgame][checksum].game
+expansion_files = hacks[curgame][checksum].expansions
 language = hacks[curgame][checksum].lang
 data = hacks[curgame][checksum].data
 return true
@@ -772,35 +1002,47 @@ end
 if hacks[id] == nil then
 hacks[id] = {}
 end
-local checksum = get_game_checksum()
-if hacks[id][checksum] == nil then
-hacks[id][checksum] = {}
+if hacks[id][game_checksum] == nil then
+hacks[id][game_checksum] = {}
 end
 local path = scriptpath .. "game\\"
+local list = list_directories(path, {"common", "expansion"})
 local hack_game = nil
-repeat
-hack_game = inputbox.inputbox("Base game folder", "Input the script base folder for this game", hack_game or hacks[id][checksum].game or game or "")
-if hack_game == nil then
+local index = controls.combobox(message.translate("base_game"), message.translate("select_base_game"), get_game_list(list), contains(list, hack_game or hacks[id][game_checksum].game or game))
+if index == nil then
 return
 end
-until hack_game ~= "" and path_exists(path .. hack_game .. "\\")
-local hack_lang = nil
-repeat
-hack_lang = inputbox.inputbox("Game Language", "Input the game's language", hack_lang or hacks[id][checksum].lang or language or "")
-if hack_lang == nil then
+hack_game = list[index]
+local hack_expansions = nil
+if path_exists(path .. "expansion\\" .. hack_game) then
+list = list_files(path .. "expansion\\" .. hack_game, nil, true)
+local expansions = controls.combobox(message.translate("game_expansions"), message.translate("select_game_expansions"), get_game_expansions(path .. "expansion\\" .. hack_game), contains(list, hacks[id][game_checksum].expansions) or {})
+if expansions == nil then
 return
 end
-until hack_lang ~= "" and contains(langmap, hack_lang)
+hack_expansions = {}
+for _, v in pairs(expansions) do
+table.insert(hack_expansions, list[v])
+end
+end
 local hack_data = nil
-repeat
-hack_data = inputbox.inputbox("Data folder", "Input the game's Data folder", hack_data or hacks[id][checksum].data or language or "")
-if hack_data == nil then
+list = list_directories(path .. hack_game)
+index = controls.combobox(message.translate("data_folder"), message.translate("select_data_folder"), list, contains(list, hack_data or hacks[id][game_checksum].data or language))
+if index == nil then
 return
 end
-until hack_data ~= "" and path_exists(path .. hack_game .. "\\" .. hack_data .. "\\")
-hacks[id][checksum].game = hack_game
-hacks[id][checksum].lang = hack_lang
-hacks[id][checksum].data = hack_data
+hack_data = list[index]
+local hack_lang = nil
+list = list_files(scriptpath .. "message", nil, true)
+index = controls.combobox(message.translate("game_language"), message.translate("select_game_language"), list, contains(list, hack_lang or hacks[id][game_checksum].lang or language))
+if index == nil then
+return
+end
+hack_lang = list[index]
+hacks[id][game_checksum].game = hack_game
+hacks[id][game_checksum].expansions = hack_expansions
+hacks[id][game_checksum].lang = hack_lang
+hacks[id][game_checksum].data = hack_data
 local file = io.open("hacks.lua", "wb")
 file:write(serpent.block(hacks, {comment=false}))
 io.close(file)

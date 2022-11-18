@@ -1,4 +1,4 @@
-CORE_FILES = {"gsc"}
+core_file = "gsc"
 
 RAM_SCREEN = 0x8800
 RAM_IN_BATTLE = 0xd22d

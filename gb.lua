@@ -7,7 +7,7 @@ codemap = {
 ["AAX"] = "silver",
 ["BYT"] = "crystal",
 }
-game_checksum = {
+oldgame_checksum = {
 ["red_blue"] = {
 -- red
 [0x91e6] = "en",
@@ -222,7 +222,7 @@ function camera_move(y, x, ignore_wall)
 		vol = 5
 	end
 
-	if camera_y >= -6 and camera_x >= -6 and camera_y <= #collisions and camera_x <= #collisions[1] then
+	if camera_y > DEFAULT_CAMERA_Y and camera_x > DEFAULT_CAMERA_X and camera_y <= #collisions and camera_x <= #collisions[1] then
 		local objects = get_objects()
 		for i, obj in pairs(objects) do
 			if obj.x == camera_x and obj.y == camera_y then
@@ -352,6 +352,7 @@ end
 else
 path = find_path_to_xy(obj.x, obj.y)
 end
+path_counter = 0
 if path == nil then
 tolk.output(message.translate("no_path"))
 return
@@ -652,7 +653,7 @@ function get_game_checksum()
 return memory.gbromreadbyte(0x14e)*256 + memory.gbromreadbyte(0x14f)
 end
 
-function parse_old_title(title)
+function parse_old_title(title, checksum)
 oldgame = ""
 local i = 9
 while title[i] ~= 0 do
@@ -660,24 +661,23 @@ oldgame = oldgame .. string.char(title[i])
 i = i + 1
 end
 oldgame = oldgame:lower()
-local checksum = get_game_checksum()
-for v in pairs(game_checksum) do
+for v in pairs(oldgame_checksum) do
 if oldgame ~= "" and v:find(oldgame) ~= nil then
 game = v
-if game_checksum[game][checksum] ~= nil then
-language = game_checksum[game][checksum]
+if oldgame_checksum[game][checksum] ~= nil then
+language = oldgame_checksum[game][checksum]
 data = language
 return true
 -- check if it's hack
 elseif set_hackrom_values(checksum) then
 return true
 else
-tolk.output("Game data not found.")
+tolk.output(message.translate("data_not_found"))
 return false
 end
 end
 end
-tolk.output("Game not supported.")
+tolk.output(message.translate("game_not_supported"))
 return false
 end
 
